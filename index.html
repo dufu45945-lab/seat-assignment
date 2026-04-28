@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班級座位分配系統</title>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#0f1117;--sur:#1a1d27;--sur2:#22263a;--bdr:#2e3350;--acc:#4f8ef7;--acc2:#f7a44f;--acc3:#4ff7a4;--red:#f74f4f;--txt:#e8eaf0;--txt2:#8b90a8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,.03)1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.03)1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 14px}
+
+/* ── LANDING ── */
+#landing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:32px}
+#landing h1{font-family:monospace;font-size:clamp(18px,5vw,32px);font-weight:700;letter-spacing:3px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
+#landing p{color:var(--txt2);font-size:13px;letter-spacing:1px}
+.landing-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.big-btn{padding:20px 40px;border-radius:14px;border:1.5px solid var(--bdr);background:var(--sur);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:16px;cursor:pointer;transition:all .2s;text-align:center;min-width:160px}
+.big-btn:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-2px)}
+.big-btn .icon{font-size:28px;display:block;margin-bottom:8px}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;display:none}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:24px;z-index:901;width:min(360px,90vw);display:none;box-shadow:0 12px 50px rgba(0,0,0,.7)}
+.modal h3{font-family:monospace;font-size:13px;color:var(--acc3);margin-bottom:16px}
+.modal input{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);padding:10px 14px;font-size:14px;font-family:system-ui,-apple-system,sans-serif;outline:none;margin-bottom:12px}
+.modal input:focus{border-color:var(--acc)}
+.modal-btns{display:flex;gap:8px}
+
+/* ── TABS ── */
+header.app-header{text-align:center;margin-bottom:20px}
+header.app-header h2{font-family:monospace;font-size:clamp(13px,3vw,20px);font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header.app-header p{color:var(--txt2);font-size:11px;margin-top:4px}
+.tabs{display:flex;gap:3px;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:4px;margin-bottom:16px;overflow-x:auto}
+.tab{flex:1;min-width:60px;padding:8px 6px;border:none;background:transparent;color:var(--txt2);font-family:system-ui,-apple-system,sans-serif;font-size:11px;border-radius:7px;cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap}
+.tab.active{background:var(--sur2);color:var(--acc);border:1px solid var(--bdr)}
+.panel{display:none}.panel.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:12px}
+.card h3{font-size:12px;color:var(--acc3);letter-spacing:1px;margin-bottom:12px;font-family:monospace}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--txt2);margin-bottom:4px}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);padding:8px 12px;font-size:13px;font-family:system-ui,-apple-system,sans-serif;outline:none}
+.field input:focus,.field select:focus{border-color:var(--acc)}
+.field select option{background:var(--bg)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(46,51,80,.4)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-row label{font-size:12px;color:var(--txt2)}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bdr);border-radius:22px;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked+.toggle-slider{background:var(--acc)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px)}
+
+/* ── WEIGHT SLIDERS ── */
+.w-row{display:grid;grid-template-columns:130px 1fr 44px;align-items:center;gap:10px;margin-bottom:10px}
+.w-label{font-size:12px;color:var(--txt2)}
+.w-label span{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer}
+.w-val{font-family:monospace;font-size:12px;color:var(--acc);text-align:right}
+.formula-box{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:11px 14px;font-family:monospace;font-size:11px;color:var(--acc2);margin-bottom:16px;line-height:1.9}
+
+/* ── SEAT MAP ── */
+.blackboard{background:linear-gradient(135deg,#1a3a2a,#0f2a1a);border:2px solid #3a6a4a;border-radius:6px;text-align:center;padding:7px;color:#7fd4a0;font-size:12px;letter-spacing:3px;margin:0 auto 10px;width:58%;font-family:monospace}
+.seat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:8px}
+.seat-cell{border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px;min-height:60px;cursor:pointer;border:1.5px solid transparent;transition:border .15s}
+.seat-cell:hover{border-color:var(--acc)}
+.sc-range{font-family:monospace;font-size:10px;font-weight:700;color:#fff;line-height:1.3;text-align:center}
+.sc-lbl{font-size:8px;color:rgba(255,255,255,.4);margin-top:1px}
+.sc-bar{width:78%;height:3px;border-radius:2px;margin-top:4px;background:rgba(255,255,255,.12);overflow:hidden}
+.sc-bar-inner{height:100%;border-radius:2px;background:rgba(255,255,255,.5)}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+thead tr{background:var(--sur2)}
+th{padding:8px 10px;text-align:left;color:var(--txt2);font-weight:500;font-size:11px;border-bottom:1px solid var(--bdr);white-space:nowrap}
+td{padding:5px 7px;border-bottom:1px solid rgba(46,51,80,.4)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(79,142,247,.04)}
+td input,td select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--bdr);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:12px;padding:2px 3px;outline:none}
+td input:focus,td select:focus{border-color:var(--acc)}
+td select option{background:var(--bg);color:var(--txt)}
+.wish-ok{color:var(--acc3);font-size:13px}
+.wish-part{color:var(--acc2);font-size:13px}
+.wish-no{color:var(--red);font-size:13px}
+
+/* ── STATUS PANEL ── */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.stu-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;font-size:12px}
+.stu-card .sname{font-weight:700;color:var(--txt);margin-bottom:4px}
+.stu-card .sstat{font-size:10px;color:var(--txt2)}
+.stu-card.done{border-color:var(--acc3)}
+.stu-card.done .sstat{color:var(--acc3)}
+.stu-card.partial{border-color:var(--acc2)}
+.prog-bar{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.prog-inner{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc3));border-radius:3px;transition:width .5s}
+
+/* ── RESULT GRID ── */
+.result-seat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:10px}
+.result-cell{border-radius:7px;padding:5px 3px;text-align:center;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1.5px solid transparent;transition:all .15s;cursor:pointer;user-select:none}
+.result-cell:hover{border-color:rgba(255,255,255,.3)}
+.result-cell.selected{border-color:var(--acc2)!important;box-shadow:0 0 0 2px rgba(247,164,79,.25)}
+.result-cell .r-name{font-size:11px;font-weight:500;color:var(--txt);line-height:1.2}
+.result-cell .r-score{font-family:monospace;font-size:9px;color:rgba(255,255,255,.3)}
+.result-cell .r-wish{font-size:10px;line-height:1}
+.result-cell.empty-cell{background:rgba(255,255,255,.02)!important;border:1.5px dashed rgba(255,255,255,.1)}
+.result-cell.empty-cell:hover,.result-cell.drop-target{border-color:var(--acc3)!important}
+@keyframes pulse{from{box-shadow:0 0 0 0 rgba(79,247,164,.1)}to{box-shadow:0 0 0 5px rgba(79,247,164,.25)}}
+.result-cell.drop-target{animation:pulse .7s ease infinite alternate}
+.swap-hint{background:rgba(247,164,79,.08);border:1px solid rgba(247,164,79,.25);border-radius:8px;padding:7px 12px;font-size:11px;color:var(--acc2);margin-bottom:10px;display:none}
+.swap-hint.on{display:block}
+.wish-stats{display:flex;gap:16px;font-size:12px;margin-bottom:12px;flex-wrap:wrap}
+.wish-stat{display:flex;align-items:center;gap:5px}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 14px;border:1px solid var(--bdr);border-radius:7px;background:var(--sur2);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn:hover{border-color:var(--acc);color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.pri:hover{background:#3a7ae0}
+.btn.ok{background:#1a3a2a;border-color:var(--acc3);color:var(--acc3)}
+.btn.sm{padding:4px 8px;font-size:11px}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tip{font-size:11px;color:var(--txt2);background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:8px 11px;margin-top:8px;line-height:1.6}
+.tip strong{color:var(--acc2)}
+.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;font-family:monospace;font-weight:700}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--txt2);margin-top:6px}
+.legend-dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
+
+/* ── QR CODE ── */
+.qr-panel{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.qr-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:12px;text-align:center}
+.qr-card .qname{font-size:12px;font-weight:700;margin-bottom:8px}
+.qr-card .qr-box{display:flex;justify-content:center;margin-bottom:6px}
+.qr-card .qr-box canvas,.qr-card .qr-box img{border-radius:6px}
+.qr-card .qlink{font-size:9px;color:var(--txt2);word-break:break-all}
+
+/* ── STUDENT MODE ── */
+#student-view{display:none;max-width:480px;margin:0 auto}
+.stu-hero{text-align:center;padding:32px 0 20px}
+.stu-hero h2{font-family:monospace;font-size:20px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.stu-hero .classname{font-size:13px;color:var(--txt2)}
+.stu-name-display{font-family:monospace;font-size:24px;color:var(--acc2);font-weight:700;margin:12px 0 4px;text-align:center}
+.section-title{font-size:11px;color:var(--acc3);letter-spacing:1px;font-family:monospace;margin-bottom:10px}
+.submit-result{text-align:center;padding:24px;display:none}
+.submit-result .big-icon{font-size:48px;margin-bottom:12px}
+.submit-result h3{font-size:18px;color:var(--acc3);margin-bottom:6px}
+.submit-result p{font-size:12px;color:var(--txt2)}
+
+/* ── RANGE EDITOR ── */
+.re-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px;z-index:901;width:min(300px,88vw);box-shadow:0 8px 40px rgba(0,0,0,.7);display:none}
+.re-editor h4{font-family:monospace;font-size:12px;color:var(--acc3);margin-bottom:14px}
+.re-editor label{font-size:11px;color:var(--txt2);display:block;margin-bottom:3px}
+.re-editor input[type=number]{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);padding:8px 10px;font-size:13px;font-family:monospace;margin-bottom:10px;outline:none}
+.re-preview{background:var(--bg);border:1px solid var(--bdr);border-radius:7px;padding:7px;font-family:monospace;font-size:12px;color:var(--acc2);text-align:center;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- ══ LANDING ══ -->
+<div id="landing">
+  <div>
+    <h1>SEAT ASSIGNMENT</h1>
+    <p style="text-align:center;margin-top:6px">班級座位科學分配系統</p>
+  </div>
+  <div class="landing-btns">
+    <button class="big-btn" onclick="showLoginForm('teacher')"><span class="icon">👩‍🏫</span>老師模式</button>
+    <button class="big-btn" onclick="showLoginForm('student')"><span class="icon">🎒</span>學生模式</button>
+  </div>
+
+  <!-- 內嵌登入表單 -->
+  <div id="login-form-box" style="display:none;width:min(340px,90vw);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px">
+    <h3 id="login-form-title" style="font-size:13px;color:var(--acc3);margin-bottom:16px;font-family:monospace"></h3>
+    <div id="login-form-inner"></div>
+    <p id="login-form-err" style="font-size:11px;color:var(--red);margin-bottom:10px;display:none">帳號、密碼或班級代碼錯誤</p>
+    <div style="display:flex;gap:8px">
+      <button class="btn pri" style="flex:1" onclick="submitLoginForm()">登入 / 進入</button>
+      <button class="btn" style="flex:1" onclick="hideLoginForm()">取消</button>
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:var(--txt2)">powered by Supabase · 即時同步</p>
+</div>
+
+<!-- ══ TEACHER APP ══ -->
+<div id="teacher-view" style="display:none">
+<div class="wrap">
+  <header class="app-header">
+    <h2>👩‍🏫 老師控制台</h2>
+    <p id="class-label">班級：—</p>
+  </header>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('setup')">⚙️ 班級設定</button>
+    <button class="tab" onclick="switchTab('formula')">⚖️ 公式</button>
+    <button class="tab" onclick="switchTab('students')">👥 學生</button>
+    <button class="tab" onclick="switchTab('qr')">📱 QR碼</button>
+    <button class="tab" onclick="switchTab('status')">📡 即時狀態</button>
+    <button class="tab" onclick="switchTab('result')">📋 分配結果</button>
+  </div>
+
+  <!-- TAB: 班級設定 -->
+  <div id="tab-setup" class="panel active">
+    <div class="card">
+      <h3>// 班級資訊</h3>
+      <div class="field"><label>班級代碼（學生掃碼時用）</label><input id="cfg-class" placeholder="例：301" oninput="saveCfg()"></div>
+      <div class="field"><label>老師密碼</label><input id="cfg-pass" type="password" placeholder="設定密碼" oninput="saveCfg()"></div>
+      <div class="field"><label>部署網址（用於產生 QR Code）</label><input id="cfg-url" placeholder="https://你的網址.github.io/seat" oninput="saveCfg()"></div>
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn pri" onclick="saveToSupabase()">☁️ 儲存到 Supabase</button>
+        <button class="btn danger" onclick="resetClass()">🗑 清除本班資料</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>// 學生填寫權限</h3>
+      <div class="toggle-row">
+        <label>學生可修改身高</label>
+        <label class="toggle"><input type="checkbox" id="perm-height" onchange="saveCfg()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <label>學生可修改近視度數</label>
+        <label class="toggle"><input type="checkbox" id="perm-myopia" onchange="saveCfg()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <label>學生可修改班排名次</label>
+        <label class="toggle"><input type="checkbox" id="perm-rank" onchange="saveCfg()"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: 公式 -->
+  <div id="tab-formula" class="panel">
+    <div class="card">
+      <h3>// 需求分數公式</h3>
+      <div class="formula-box" id="formula-display">計算中...</div>
+      <div class="w-row"><div class="w-label"><span style="background:#4f8ef7"></span>身高</div><input type="range" id="w-h" min="0" max="100" value="35" oninput="updateFormula()"><div class="w-val" id="wv-h">35%</div></div>
+      <div class="w-row"><div class="w-label"><span style="background:#f74f4f"></span>近視</div><input type="range" id="w-m" min="0" max="100" value="40" oninput="updateFormula()"><div class="w-val" id="wv-m">40%</div></div>
+      <div class="w-row"><div class="w-label"><span style="background:#f7a44f"></span>班排</div><input type="range" id="w-r" min="0" max="100" value="25" oninput="updateFormula()"><div class="w-val" id="wv-r">25%</div></div>
+      <div style="font-size:10px;color:var(--txt2);text-align:right;margin-top:2px">※ 自動正規化</div>
+    </div>
+    <div class="card">
+      <h3>// 願望滿足權重</h3>
+      <div class="w-row"><div class="w-label"><span style="background:#4ff7a4"></span>鄰座願望</div><input type="range" id="w-nbr" min="0" max="100" value="60" oninput="updateWishWeights()"><div class="w-val" id="wv-nbr">60</div></div>
+      <div class="w-row"><div class="w-label"><span style="background:#a44ff7"></span>排別願望</div><input type="range" id="w-row-w" min="0" max="100" value="40" oninput="updateWishWeights()"><div class="w-val" id="wv-row-w">40</div></div>
+      <div class="btn-row" style="margin-top:4px">
+        <button class="btn ok" onclick="setWishDefault()">✨ 盡量滿足預設</button>
+      </div>
+      <div class="tip"><strong>說明：</strong>願望權重越高，後處理對調時此類願望優先度越高。不影響健康需求（近視深者仍優先前排）。</div>
+    </div>
+    <div class="card">
+      <h3>// 座位分數範圍地圖</h3>
+      <div class="blackboard">█ 黑 板 █</div>
+      <div class="seat-grid" id="seat-score-grid"></div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#f74f4f"></span>高分（前排優先）</span>
+        <span><span class="legend-dot" style="background:#4f8ef7"></span>低分（後排優先）</span>
+      </div>
+      <div class="tip">點擊格子調整分數範圍。分配以中點排序。</div>
+    </div>
+  </div>
+
+  <!-- TAB: 學生資料 -->
+  <div id="tab-students" class="panel">
+    <div class="card">
+      <h3>// 學生資料管理</h3>
+      <div class="btn-row">
+        <button class="btn" onclick="addStudent()">＋ 新增</button>
+        <button class="btn" onclick="loadDemo()">📥 範例35人</button>
+        <button class="btn" onclick="clearStudents()">🗑 清除</button>
+        <button class="btn pri" onclick="saveToSupabase()">☁️ 同步Supabase</button>
+        <button class="btn ok" onclick="switchTab('result');assignSeats()">▶ 執行分配</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>姓名</th><th>身高cm</th><th>近視度</th><th>班排</th>
+            <th>希望鄰座</th><th>希望排別</th><th>需求分</th><th></th>
+          </tr></thead>
+          <tbody id="student-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: QR碼 -->
+  <div id="tab-qr" class="panel">
+    <div class="card">
+      <h3>// 學生 QR Code 產生器</h3>
+      <div class="tip" style="margin-bottom:12px">每位學生掃碼後可填寫願望（及老師開放的欄位）。請先在「班級設定」填好部署網址。</div>
+      <div class="btn-row">
+        <button class="btn pri" onclick="generateQRs()">🔄 產生所有 QR Code</button>
+      </div>
+      <div class="qr-panel" id="qr-panel"></div>
+    </div>
+  </div>
+
+  <!-- TAB: 即時狀態 -->
+  <div id="tab-status" class="panel">
+    <div class="card">
+      <h3>// 填寫狀態控制</h3>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+        <div id="collect-status-badge" style="padding:6px 14px;border-radius:99px;font-size:12px;font-family:monospace;font-weight:700;background:rgba(46,51,80,.5);color:var(--txt2)">⏸ 尚未開放</div>
+        <button class="btn ok" onclick="setCollectStatus('open')">📬 開放填寫</button>
+        <button class="btn danger" onclick="setCollectStatus('closed')">🔒 截止填寫</button>
+        <button class="btn" onclick="setCollectStatus('waiting')">⏸ 重設為等待</button>
+      </div>
+      <div class="tip" style="margin-bottom:14px">開放填寫後學生才能送出願望；截止後才能執行座位分配。</div>
+    </div>
+    <div class="card">
+      <h3>// 學生填寫即時狀態</h3>
+      <div class="prog-bar"><div class="prog-inner" id="prog-inner" style="width:0%"></div></div>
+      <p id="prog-text" style="font-size:12px;color:var(--txt2);margin-bottom:14px">0 / 0 位學生已填寫</p>
+      <div class="status-grid" id="status-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB: 分配結果 -->
+  <div id="tab-result" class="panel">
+    <div class="card">
+      <h3>// ASSIGNED SEAT MAP</h3>
+      <div id="assign-locked-notice" style="display:none;background:rgba(247,79,79,.08);border:1px solid rgba(247,79,79,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:12px">
+        🔒 填寫尚未截止，無法執行分配。請至「即時狀態」頁點「截止填寫」後再分配。
+      </div>
+      <div class="wish-stats" id="wish-stats"></div>
+      <div id="swap-hint" class="swap-hint">✦ 已選取：<strong id="swap-name"></strong>　→ 點目標格完成移動，再點同格取消</div>
+      <div class="blackboard" style="margin-bottom:12px">█ 黑 板 █</div>
+      <div class="result-seat-grid" id="result-grid"></div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn pri" onclick="assignSeats()">🔄 執行／重新分配</button>
+        <button class="btn" onclick="exportText()">📋 複製結果</button>
+      </div>
+      <div class="tip"><strong>願望圖示：</strong>✅ 完全達成　🔶 部分達成　❌ 未達成</div>
+    </div>
+  </div>
+</div><!-- .wrap -->
+</div><!-- #teacher-view -->
+
+<!-- ══ STUDENT VIEW ══ -->
+<div id="student-view">
+<div class="wrap">
+  <div class="stu-hero">
+    <h2>SEAT WISH</h2>
+    <div class="classname" id="stu-classname">班級：—</div>
+    <div class="stu-name-display" id="stu-name-display">—</div>
+    <div style="font-size:11px;color:var(--txt2)">填寫你的座位願望</div>
+  </div>
+
+  <div id="stu-form">
+    <!-- 狀態提示 -->
+    <div id="stu-status-waiting" style="display:none" class="card" style="text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">⏸</div>
+      <div style="font-size:15px;color:var(--txt2)">老師尚未開放填寫，請稍候。</div>
+    </div>
+    <div id="stu-status-closed" style="display:none" class="card" style="text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">🔒</div>
+      <div style="font-size:15px;color:var(--txt2)">填寫已截止，感謝你的參與！</div>
+    </div>
+
+    <div id="stu-form-inner">
+    <div id="stu-form-inner">
+    <!-- 個人資料確認（依老師設定顯示） -->
+    <div class="card" id="stu-data-card" style="display:none">
+      <div class="section-title">// 確認個人資料</div>
+      <div id="stu-height-field" class="field" style="display:none">
+        <label>身高（cm）</label>
+        <input type="number" id="stu-height" placeholder="165">
+      </div>
+      <div id="stu-myopia-field" class="field" style="display:none">
+        <label>近視度數</label>
+        <input type="number" id="stu-myopia" placeholder="200">
+      </div>
+      <div id="stu-rank-field" class="field" style="display:none">
+        <label>班排名次</label>
+        <input type="number" id="stu-rank" placeholder="15">
+      </div>
+    </div>
+
+    <!-- 願望 -->
+    <div class="card">
+      <div class="section-title">// 座位願望</div>
+      <div class="field">
+        <label>希望坐在誰旁邊？（填同學姓名，左右或前後相鄰皆算）</label>
+        <input type="text" id="stu-wish-nbr" placeholder="例：林雅婷（可不填）">
+      </div>
+      <div class="field">
+        <label>希望坐在哪一區？</label>
+        <select id="stu-wish-row">
+          <option value="">不指定</option>
+          <option value="front">前排（第1~2排）</option>
+          <option value="mid">中排（第3~4排）</option>
+          <option value="back">後排（第5~6排）</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn pri" style="width:100%;padding:14px;font-size:15px;border-radius:10px;margin-top:4px" onclick="submitStudentWish()">
+      ✉️ 送出願望
+    </button>
+    </div><!-- stu-form-inner -->
+
+  <div class="submit-result" id="submit-result">
+    <div class="big-icon">🎉</div>
+    <h3>願望送出成功！</h3>
+    <p>老師已收到你的填寫，等待座位分配結果吧！</p>
+  </div>
+</div>
+</div>
+
+<!-- Range Editor -->
+<div class="overlay" id="re-overlay" onclick="closeRangeEditor()"></div>
+<div class="re-editor" id="re-editor">
+  <h4 id="re-title">// 調整座位分數範圍</h4>
+  <label>最小分數（0~100）</label>
+  <input type="number" id="re-min" min="0" max="100" oninput="rePreview()">
+  <label>最大分數（0~100）</label>
+  <input type="number" id="re-max" min="0" max="100" oninput="rePreview()">
+  <div class="re-preview" id="re-preview">中點：—</div>
+  <div class="modal-btns">
+    <button class="btn pri" style="flex:1" onclick="saveRangeEditor()">確認</button>
+    <button class="btn" style="flex:1" onclick="closeRangeEditor()">取消</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  SUPABASE 設定
+// ══════════════════════════════════════════
+const SUPABASE_URL = 'https://bbycxnlpuvqlyuyauems.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJieWN4bmxwdXZxbHl1eWF1ZW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTc0OTgsImV4cCI6MjA5MjQzMzQ5OH0.lnsB8weZrMfN0zNuM-GdLQf_qr8pRTHorcVUtA2M7-A';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let classCode = '';
+let teacherPass = '';
+let students = [];
+let resultGrid = Array.from({length:6},()=>Array(6).fill(null));
+let swapSel = null;
+let editTarget = null;
+let currentStudentName = '';
+let realtimeChannel = null;
+let collectStatus = 'waiting'; // 'waiting' | 'open' | 'closed'
+
+let seatRanges = [
+  [{min:60,max:80},{min:80,max:100},{min:90,max:100},{min:90,max:100},{min:80,max:100},{min:60,max:80}],
+  [{min:45,max:65},{min:65,max:85},{min:75,max:95},{min:75,max:95},{min:65,max:85},{min:45,max:65}],
+  [{min:32,max:50},{min:48,max:68},{min:58,max:78},{min:58,max:78},{min:48,max:68},{min:32,max:50}],
+  [{min:20,max:38},{min:34,max:52},{min:42,max:62},{min:42,max:62},{min:34,max:52},{min:20,max:38}],
+  [{min:10,max:24},{min:20,max:36},{min:26,max:46},{min:26,max:46},{min:20,max:36},{min:10,max:24}],
+  [{min: 2,max:12},{min: 8,max:20},{min:12,max:28},{min:12,max:28},{min: 8,max:20},{min: 2,max:12}],
+];
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function mid(r,c){ return (seatRanges[r][c].min+seatRanges[r][c].max)/2; }
+function scoreColor(s){
+  const rv=Math.round(Math.min(255,s*1.6+79));
+  const gv=Math.round(Math.max(0,79-s*0.3));
+  const bv=Math.round(Math.max(0,247-s*1.9));
+  return `rgba(${rv},${gv},${bv},0.38)`;
+}
+function showModal(id){ document.getElementById('overlay').style.display='block'; document.getElementById(id).style.display='block'; }
+function closeModal(){ document.getElementById('overlay').style.display='none'; document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); }
+function switchTab(name){
+  const names=['setup','formula','students','qr','status','result'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ══════════════════════════════════════════
+//  LANDING
+// ══════════════════════════════════════════
+let loginMode = '';
+function showLoginForm(mode){
+  loginMode = mode;
+  const box = document.getElementById('login-form-box');
+  const title = document.getElementById('login-form-title');
+  const inner = document.getElementById('login-form-inner');
+  document.getElementById('login-form-err').style.display='none';
+  if(mode==='teacher'){
+    title.textContent='// 老師登入';
+    inner.innerHTML=
+      `<div class="field"><label>班級代碼</label><input id="lf-class" placeholder="例：301"></div>`+
+      `<div class="field"><label>密碼</label><input id="lf-pass" type="password" placeholder="密碼"></div>`;
+  } else {
+    title.textContent='// 學生入口';
+    inner.innerHTML=
+      `<div class="field"><label>班級代碼</label><input id="lf-class" placeholder="例：301"></div>`+
+      `<div class="field"><label>你的姓名</label><input id="lf-name" placeholder="姓名"></div>`;
+  }
+  box.style.display='block';
+}
+function hideLoginForm(){
+  document.getElementById('login-form-box').style.display='none';
+}
+async function submitLoginForm(){
+  document.getElementById('login-form-err').style.display='none';
+  if(loginMode==='teacher'){
+    const cls=document.getElementById('lf-class').value.trim();
+    const pass=document.getElementById('lf-pass').value;
+    if(!cls||!pass){ document.getElementById('login-form-err').style.display='block'; return; }
+    const {data,error}=await sb.from('classes').select('pass').eq('id',cls).single();
+    if(error&&error.code==='PGRST116'){
+      if(!confirm(`班級「${cls}」不存在，要建立新班級嗎？`)) return;
+      const {error:e2}=await sb.from('classes').insert({id:cls,pass,config:{}});
+      if(e2){ alert('建立失敗：'+e2.message); return; }
+    } else if(error||!data||data.pass!==pass){
+      document.getElementById('login-form-err').style.display='block'; return;
+    }
+    classCode=cls; teacherPass=pass;
+    hideLoginForm();
+    await loadFromSupabase();
+    enterTeacherMode();
+  } else {
+    const cls=document.getElementById('lf-class').value.trim();
+    const name=document.getElementById('lf-name').value.trim();
+    if(!cls||!name){ document.getElementById('login-form-err').style.display='block'; return; }
+    const {data,error}=await sb.from('students').select('name').eq('class_id',cls).eq('name',name).single();
+    if(error||!data){ document.getElementById('login-form-err').style.display='block'; return; }
+    hideLoginForm();
+    enterStudentMode(cls,name);
+  }
+}
+function showTeacherLogin(){ showLoginForm('teacher'); }
+function showStudentEntry(){ showLoginForm('student'); }
+
+async function doTeacherLogin(){
+  const cls=document.getElementById('login-class').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!cls||!pass){ document.getElementById('login-err').style.display='block'; return; }
+  const {data,error}=await sb.from('classes').select('pass').eq('id',cls).single();
+  if(error&&error.code==='PGRST116'){
+    // 班級不存在 → 第一次建立
+    if(!confirm(`班級「${cls}」不存在，要建立新班級嗎？`)) return;
+    const {error:e2}=await sb.from('classes').insert({id:cls,pass,config:{}});
+    if(e2){ alert('建立失敗：'+e2.message); return; }
+  } else if(error||!data||data.pass!==pass){
+    document.getElementById('login-err').style.display='block'; return;
+  }
+  classCode=cls; teacherPass=pass;
+  closeModal();
+  await loadFromSupabase();
+  enterTeacherMode();
+}
+
+async function doStudentEntry(){
+  const cls=document.getElementById('stu-class-input').value.trim();
+  const name=document.getElementById('stu-name-input').value.trim();
+  if(!cls||!name){ document.getElementById('stu-err').style.display='block'; return; }
+  const {data,error}=await sb.from('students').select('name').eq('class_id',cls).eq('name',name).single();
+  if(error||!data){ document.getElementById('stu-err').style.display='block'; return; }
+  closeModal();
+  enterStudentMode(cls,name);
+}
+
+// ══════════════════════════════════════════
+//  TEACHER MODE
+// ══════════════════════════════════════════
+function enterTeacherMode(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('teacher-view').style.display='block';
+  document.getElementById('class-label').textContent=`班級：${classCode}`;
+  updateFormula();
+  renderStudentTable();
+  renderSeatMap();
+  startStatusListener();
+}
+
+function saveCfg(){
+  classCode=document.getElementById('cfg-class').value.trim()||classCode;
+  teacherPass=document.getElementById('cfg-pass').value||teacherPass;
+}
+
+async function saveToSupabase(){
+  if(!classCode){ alert('請先填班級代碼'); return; }
+  const cfg={
+    pass: teacherPass||document.getElementById('cfg-pass').value,
+    url: document.getElementById('cfg-url').value.trim(),
+    permHeight: document.getElementById('perm-height').checked,
+    permMyopia: document.getElementById('perm-myopia').checked,
+    permRank:   document.getElementById('perm-rank').checked,
+    wNbr: +document.getElementById('w-nbr').value,
+    wRow: +document.getElementById('w-row-w').value,
+    wH: +document.getElementById('w-h').value,
+    wM: +document.getElementById('w-m').value,
+    wR: +document.getElementById('w-r').value,
+    seatRanges: JSON.stringify(seatRanges),
+    collectStatus,
+  };
+  // upsert class
+  await sb.from('classes').upsert({id:classCode, pass:cfg.pass, config:cfg});
+  // delete old students and re-insert
+  await sb.from('students').delete().eq('class_id',classCode);
+  if(students.length){
+    const rows=students.map(s=>({
+      class_id:classCode, name:s.name||'', height:s.height||null,
+      myopia:s.myopia||null, rank:s.rank||null,
+      wish_nbr:s.wishNbr||'', wish_row:s.wishRow||'', submitted:s.submitted||false
+    }));
+    await sb.from('students').insert(rows);
+  }
+  alert('✅ 已儲存到 Supabase！');
+}
+
+async function loadFromSupabase(){
+  const {data:cls}=await sb.from('classes').select('*').eq('id',classCode).single();
+  if(!cls) return;
+  const cfg=cls.config||{};
+  if(cfg.url) document.getElementById('cfg-url').value=cfg.url;
+  document.getElementById('cfg-pass').value=cls.pass||'';
+  document.getElementById('cfg-class').value=classCode;
+  document.getElementById('perm-height').checked=cfg.permHeight||false;
+  document.getElementById('perm-myopia').checked=cfg.permMyopia||false;
+  document.getElementById('perm-rank').checked=cfg.permRank||false;
+  if(cfg.wNbr!=null) document.getElementById('w-nbr').value=cfg.wNbr;
+  if(cfg.wRow!=null) document.getElementById('w-row-w').value=cfg.wRow;
+  if(cfg.wH!=null) document.getElementById('w-h').value=cfg.wH;
+  if(cfg.wM!=null) document.getElementById('w-m').value=cfg.wM;
+  if(cfg.wR!=null) document.getElementById('w-r').value=cfg.wR;
+  if(cfg.seatRanges) seatRanges=JSON.parse(cfg.seatRanges);
+  if(cfg.collectStatus) collectStatus=cfg.collectStatus;
+  const {data:stus}=await sb.from('students').select('*').eq('class_id',classCode).order('id');
+  if(stus){
+    students=stus.map(s=>({
+      _id:s.id, name:s.name||'', height:s.height||'', myopia:s.myopia||'',
+      rank:s.rank||'', wishNbr:s.wish_nbr||'', wishRow:s.wish_row||'', submitted:s.submitted||false
+    }));
+  }
+}
+
+async function resetClass(){
+  if(!confirm('確定清除本班所有資料？')) return;
+  await sb.from('students').delete().eq('class_id',classCode);
+  await sb.from('classes').delete().eq('id',classCode);
+  students=[];
+  renderStudentTable();
+  alert('已清除');
+}
+
+// ══════════════════════════════════════════
+//  FORMULA
+// ══════════════════════════════════════════
+function getWeights(){
+  const wh=+document.getElementById('w-h').value;
+  const wm=+document.getElementById('w-m').value;
+  const wr=+document.getElementById('w-r').value;
+  const t=wh+wm+wr||1;
+  return {h:wh/t,m:wm/t,r:wr/t};
+}
+function updateFormula(){
+  const w=getWeights();
+  const ph=Math.round(w.h*100),pm=Math.round(w.m*100),pr=Math.round(w.r*100);
+  document.getElementById('wv-h').textContent=ph+'%';
+  document.getElementById('wv-m').textContent=pm+'%';
+  document.getElementById('wv-r').textContent=pr+'%';
+  document.getElementById('formula-display').innerHTML=
+    `<span style="color:#8b90a8">// 標準化後加權合計</span>\n`+
+    `需求分 = <span style="color:#4f8ef7">${ph}%</span>×norm(身高↑→低分)\n`+
+    `       + <span style="color:#f74f4f">${pm}%</span>×norm(近視↑→高分)\n`+
+    `       + <span style="color:#f7a44f">${pr}%</span>×norm(班排↑→高分)`;
+  renderSeatMap();
+  renderStudentTable();
+}
+function updateWishWeights(){
+  document.getElementById('wv-nbr').textContent=document.getElementById('w-nbr').value;
+  document.getElementById('wv-row-w').textContent=document.getElementById('w-row-w').value;
+}
+function setWishDefault(){
+  document.getElementById('w-nbr').value=60;
+  document.getElementById('w-row-w').value=40;
+  updateWishWeights();
+}
+
+// ══════════════════════════════════════════
+//  SEAT MAP
+// ══════════════════════════════════════════
+function renderSeatMap(){
+  const g=document.getElementById('seat-score-grid');
+  if(!g) return;
+  g.innerHTML='';
+  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+    const rng=seatRanges[r][c], m=(rng.min+rng.max)/2;
+    const cell=document.createElement('div');
+    cell.className='seat-cell'; cell.style.background=scoreColor(m);
+    cell.innerHTML=`<span class="sc-range">${rng.min}～${rng.max}</span><span class="sc-lbl">R${r+1}C${c+1}</span><div class="sc-bar"><div class="sc-bar-inner" style="width:${m}%"></div></div>`;
+    cell.onclick=()=>openRangeEditor(r,c);
+    g.appendChild(cell);
+  }
+}
+
+// ══════════════════════════════════════════
+//  RANGE EDITOR
+// ══════════════════════════════════════════
+function openRangeEditor(r,c){
+  editTarget={r,c};
+  document.getElementById('re-title').textContent=`// R${r+1}C${c+1} 座位分數範圍`;
+  document.getElementById('re-min').value=seatRanges[r][c].min;
+  document.getElementById('re-max').value=seatRanges[r][c].max;
+  rePreview();
+  document.getElementById('re-overlay').style.display='block';
+  document.getElementById('re-editor').style.display='block';
+}
+function rePreview(){
+  const mn=+document.getElementById('re-min').value, mx=+document.getElementById('re-max').value;
+  document.getElementById('re-preview').textContent=`範圍 ${mn}～${mx}　中點：${((mn+mx)/2).toFixed(1)}`;
+}
+function saveRangeEditor(){
+  let mn=Math.max(0,Math.min(100,+document.getElementById('re-min').value||0));
+  let mx=Math.max(0,Math.min(100,+document.getElementById('re-max').value||0));
+  if(mn>mx)[mn,mx]=[mx,mn];
+  seatRanges[editTarget.r][editTarget.c]={min:mn,max:mx};
+  closeRangeEditor(); renderSeatMap();
+}
+function closeRangeEditor(){
+  document.getElementById('re-overlay').style.display='none';
+  document.getElementById('re-editor').style.display='none';
+}
+
+// ══════════════════════════════════════════
+//  STUDENTS
+// ══════════════════════════════════════════
+function addStudent(data={}){
+  students.push({name:data.name||'',height:data.height||'',myopia:data.myopia||'',rank:data.rank||'',wishNbr:data.wishNbr||'',wishRow:data.wishRow||''});
+  renderStudentTable();
+}
+function clearStudents(){ if(confirm('確定清除？')){students=[];renderStudentTable();} }
+
+function renderStudentTable(){
+  const scores=calcAllScores();
+  const tbody=document.getElementById('student-tbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  students.forEach((s,i)=>{
+    const sc=scores[i];
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      `<td style="color:var(--txt2);width:24px">${i+1}</td>`+
+      `<td><input value="${s.name}" placeholder="姓名" oninput="students[${i}].name=this.value;renderStudentTable()"/></td>`+
+      `<td><input type="number" value="${s.height}" placeholder="165" oninput="students[${i}].height=this.value;renderStudentTable()"/></td>`+
+      `<td><input type="number" value="${s.myopia}" placeholder="200" oninput="students[${i}].myopia=this.value;renderStudentTable()"/></td>`+
+      `<td><input type="number" value="${s.rank}" placeholder="15" oninput="students[${i}].rank=this.value;renderStudentTable()"/></td>`+
+      `<td><input value="${s.wishNbr||''}" placeholder="同學姓名" oninput="students[${i}].wishNbr=this.value"/></td>`+
+      `<td><select onchange="students[${i}].wishRow=this.value"><option value="" ${!s.wishRow?'selected':''}>不指定</option><option value="front" ${s.wishRow==='front'?'selected':''}>前排</option><option value="mid" ${s.wishRow==='mid'?'selected':''}>中排</option><option value="back" ${s.wishRow==='back'?'selected':''}>後排</option></select></td>`+
+      `<td style="text-align:center">${sc!==null?`<span class="badge" style="background:${scoreColor(sc)};color:#fff">${sc.toFixed(1)}</span>`:'<span style="color:var(--txt2)">—</span>'}</td>`+
+      `<td><button class="btn sm" onclick="students.splice(${i},1);renderStudentTable()">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function calcAllScores(){
+  const vals=students.map(s=>({h:+s.height,m:+s.myopia,r:+s.rank}));
+  const hs=vals.map(v=>v.h).filter(x=>x>0&&!isNaN(x));
+  const ms=vals.map(v=>v.m).filter(x=>x>=0&&!isNaN(x));
+  const rs=vals.map(v=>v.r).filter(x=>x>0&&!isNaN(x));
+  if(!hs.length) return students.map(()=>null);
+  const minH=Math.min(...hs),maxH=Math.max(...hs);
+  const minM=Math.min(...ms),maxM=Math.max(...ms);
+  const minR=Math.min(...rs),maxR=Math.max(...rs);
+  const w=getWeights();
+  return vals.map(v=>{
+    if(!v.h||isNaN(v.h)||isNaN(v.m)||!v.r||isNaN(v.r)) return null;
+    const nh=maxH===minH?50:(maxH-v.h)/(maxH-minH)*100;
+    const nm=maxM===minM?50:(v.m-minM)/(maxM-minM)*100;
+    const nr=maxR===minR?50:(v.r-minR)/(maxR-minR)*100;
+    return w.h*nh+w.m*nm+w.r*nr;
+  });
+}
+
+// ══════════════════════════════════════════
+//  QR CODES
+// ══════════════════════════════════════════
+function generateQRs(){
+  const baseUrl=document.getElementById('cfg-url').value.trim()||location.origin+location.pathname;
+  const cls=document.getElementById('cfg-class').value.trim()||classCode;
+  const panel=document.getElementById('qr-panel');
+  panel.innerHTML='';
+  if(!students.length){ panel.innerHTML='<p style="color:var(--txt2)">請先新增學生</p>'; return; }
+  students.forEach(s=>{
+    if(!s.name) return;
+    const url=`${baseUrl}?mode=student&class=${encodeURIComponent(cls)}&name=${encodeURIComponent(s.name)}`;
+    const card=document.createElement('div');
+    card.className='qr-card';
+    const qbox=document.createElement('div');
+    qbox.className='qr-box';
+    card.innerHTML=`<div class="qname">${s.name}</div>`;
+    card.appendChild(qbox);
+    const linkEl=document.createElement('div');
+    linkEl.className='qlink';
+    linkEl.textContent=url;
+    card.appendChild(linkEl);
+    panel.appendChild(card);
+    new QRCode(qbox,{text:url,width:110,height:110,colorDark:'#e8eaf0',colorLight:'#22263a'});
+  });
+}
+
+// ══════════════════════════════════════════
+//  STATUS LISTENER (即時)
+// ══════════════════════════════════════════
+function startStatusListener(){
+  if(realtimeChannel) sb.removeChannel(realtimeChannel);
+
+  // 監聽 collectStatus（從 classes 表）
+  realtimeChannel = sb.channel(`class-${classCode}`)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'classes',filter:`id=eq.${classCode}`},
+      payload=>{
+        const cfg=payload.new.config||{};
+        if(cfg.collectStatus){
+          collectStatus=cfg.collectStatus;
+          updateCollectBadge();
+        }
+      })
+    .on('postgres_changes',{event:'*',schema:'public',table:'students',filter:`class_id=eq.${classCode}`},
+      async ()=>{
+        // 重新拉最新學生資料
+        const {data:stus}=await sb.from('students').select('*').eq('class_id',classCode).order('id');
+        if(stus){
+          stus.forEach(remote=>{
+            const local=students.find(s=>s.name===remote.name);
+            if(local){
+              local.wishNbr=remote.wish_nbr||'';
+              local.wishRow=remote.wish_row||'';
+              local.submitted=remote.submitted||false;
+              if(document.getElementById('perm-height').checked&&remote.height) local.height=remote.height;
+              if(document.getElementById('perm-myopia').checked&&remote.myopia) local.myopia=remote.myopia;
+              if(document.getElementById('perm-rank').checked&&remote.rank) local.rank=remote.rank;
+            }
+          });
+        }
+        renderStudentTable();
+        renderStatusGrid();
+      })
+    .subscribe();
+}
+
+async function setCollectStatus(status){
+  collectStatus=status;
+  // 讀取現有config再更新collectStatus欄位
+  const {data:cls}=await sb.from('classes').select('config').eq('id',classCode).single();
+  const cfg=Object.assign({},cls?.config||{},{collectStatus:status});
+  await sb.from('classes').update({config:cfg}).eq('id',classCode);
+  updateCollectBadge();
+}
+
+function updateCollectBadge(){
+  const badge=document.getElementById('collect-status-badge');
+  if(!badge) return;
+  const map={
+    waiting:{text:'⏸ 等待中',bg:'rgba(46,51,80,.5)',color:'var(--txt2)'},
+    open:   {text:'📬 填寫開放中',bg:'rgba(79,247,164,.12)',color:'var(--acc3)'},
+    closed: {text:'🔒 已截止',bg:'rgba(247,79,79,.12)',color:'var(--red)'},
+  };
+  const s=map[collectStatus]||map.waiting;
+  badge.textContent=s.text; badge.style.background=s.bg; badge.style.color=s.color;
+  // lock/unlock assign button
+  const notice=document.getElementById('assign-locked-notice');
+  if(notice) notice.style.display=collectStatus==='closed'?'none':'block';
+}
+
+function renderStatusGrid(){
+  const grid=document.getElementById('status-grid');
+  if(!grid) return;
+  const done=students.filter(s=>s.submitted).length;
+  const total=students.length;
+  document.getElementById('prog-inner').style.width=total?`${done/total*100}%`:'0%';
+  document.getElementById('prog-text').textContent=`${done} / ${total} 位學生已填寫`;
+  grid.innerHTML='';
+  students.forEach(s=>{
+    const card=document.createElement('div');
+    card.className='stu-card'+(s.submitted?' done':s.wishNbr||s.wishRow?' partial':'');
+    card.innerHTML=`<div class="sname">${s.name||'—'}</div><div class="sstat">${s.submitted?'✅ 已填寫':s.wishNbr||s.wishRow?'🔶 部分填寫':'⏳ 未填寫'}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════
+//  ASSIGNMENT
+// ══════════════════════════════════════════
+function assignSeats(){
+  if(collectStatus!=='closed'){
+    const notice=document.getElementById('assign-locked-notice');
+    if(notice) notice.style.display='block';
+    return;
+  }
+  swapSel=null;
+  const scores=calcAllScores();
+  if(scores.every(s=>s===null)){
+    document.getElementById('result-grid').innerHTML='<p style="color:var(--txt2);padding:20px;grid-column:1/-1;text-align:center">請先填入學生資料</p>';
+    return;
+  }
+  // sort seats by midpoint desc
+  const seats=[];
+  for(let r=0;r<6;r++) for(let c=0;c<6;c++) seats.push({r,c,mid:mid(r,c)});
+  seats.sort((a,b)=>b.mid-a.mid);
+
+  // sort students by score desc
+  const indexed=students.map((s,i)=>({s,score:scores[i],i}))
+    .filter(x=>x.score!==null).sort((a,b)=>b.score-a.score);
+
+  resultGrid=Array.from({length:6},()=>Array(6).fill(null));
+  indexed.forEach((item,idx)=>{
+    if(idx<seats.length){
+      const seat=seats[idx];
+      resultGrid[seat.r][seat.c]={name:item.s.name||`學生${item.i+1}`,score:item.score,wishNbr:item.s.wishNbr||'',wishRow:item.s.wishRow||''};
+    }
+  });
+
+  // ── Wish post-processing ──
+  optimizeWishes();
+  renderResultGrid();
+}
+
+function rowZone(r){ return r<2?'front':r<4?'mid':'back'; }
+
+function wishScore(grid){
+  const wNbr=+document.getElementById('w-nbr').value;
+  const wRow=+document.getElementById('w-row-w').value;
+  let total=0;
+  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+    const d=grid[r][c]; if(!d) continue;
+    if(d.wishRow && rowZone(r)===d.wishRow) total+=wRow;
+    if(d.wishNbr){
+      const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+      const nbOk=neighbors.some(([nr,nc])=>{
+        if(nr<0||nr>5||nc<0||nc>5) return false;
+        return grid[nr][nc]&&grid[nr][nc].name===d.wishNbr;
+      });
+      if(nbOk) total+=wNbr;
+    }
+  }
+  return total;
+}
+
+function optimizeWishes(){
+  // only swap students with similar base scores (within 15 pts)
+  const maxIter=200;
+  for(let iter=0;iter<maxIter;iter++){
+    let improved=false;
+    for(let r1=0;r1<6;r1++) for(let c1=0;c1<6;c1++){
+      for(let r2=0;r2<6;r2++) for(let c2=0;c2<6;c2++){
+        if(r1===r2&&c1===c2) continue;
+        const a=resultGrid[r1][c1], b=resultGrid[r2][c2];
+        // allow swap with empty too
+        const scoreDiff=a&&b?Math.abs(a.score-b.score):0;
+        if(a&&b&&scoreDiff>15) continue;
+        const before=wishScore(resultGrid);
+        // try swap
+        resultGrid[r1][c1]=b; resultGrid[r2][c2]=a;
+        const after=wishScore(resultGrid);
+        if(after>before){ improved=true; }
+        else { resultGrid[r1][c1]=a; resultGrid[r2][c2]=b; }
+      }
+    }
+    if(!improved) break;
+  }
+}
+
+function calcWishResults(){
+  let nbrOk=0,nbrTotal=0,rowOk=0,rowTotal=0;
+  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+    const d=resultGrid[r][c]; if(!d) continue;
+    if(d.wishNbr){
+      nbrTotal++;
+      const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+      if(neighbors.some(([nr,nc])=>nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]?.name===d.wishNbr)) nbrOk++;
+    }
+    if(d.wishRow){ rowTotal++; if(rowZone(r)===d.wishRow) rowOk++; }
+  }
+  return {nbrOk,nbrTotal,rowOk,rowTotal};
+}
+
+function getWishStatus(r,c){
+  const d=resultGrid[r][c]; if(!d) return '';
+  let nbrOk=false,rowOk=false,hasNbr=!!d.wishNbr,hasRow=!!d.wishRow;
+  if(hasNbr){
+    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
+    nbrOk=neighbors.some(([nr,nc])=>nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]?.name===d.wishNbr);
+  }
+  if(hasRow) rowOk=rowZone(r)===d.wishRow;
+  if(!hasNbr&&!hasRow) return '';
+  const ok=(hasNbr?nbrOk:true)&&(hasRow?rowOk:true);
+  const part=(hasNbr&&nbrOk)||(hasRow&&rowOk);
+  return ok?'✅':part?'🔶':'❌';
+}
+
+// ══════════════════════════════════════════
+//  RESULT GRID
+// ══════════════════════════════════════════
+function renderResultGrid(){
+  const container=document.getElementById('result-grid');
+  container.innerHTML='';
+  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
+    const cell=document.createElement('div');
+    cell.className='result-cell';
+    const data=resultGrid[r][c];
+    cell.style.background=scoreColor(mid(r,c));
+    if(!data){
+      cell.classList.add('empty-cell');
+      if(swapSel) cell.classList.add('drop-target');
+      cell.innerHTML=`<span style="color:rgba(255,255,255,.15);font-size:14px">·</span>`;
+    } else {
+      const ws=getWishStatus(r,c);
+      cell.innerHTML=`<span class="r-name">${data.name}</span><span class="r-score">${data.score.toFixed(0)}</span>${ws?`<span class="r-wish">${ws}</span>`:''}`;
+    }
+    if(swapSel&&swapSel.r===r&&swapSel.c===c) cell.classList.add('selected');
+    const row=r,col=c;
+    cell.onclick=()=>handleCellClick(row,col);
+    container.appendChild(cell);
+  }
+  // wish stats
+  const ws=calcWishResults();
+  document.getElementById('wish-stats').innerHTML=
+    `<span class="wish-stat">🏘 鄰座：<strong style="color:var(--acc3)">${ws.nbrOk}/${ws.nbrTotal}</strong></span>`+
+    `<span class="wish-stat">📍 排別：<strong style="color:var(--acc3)">${ws.rowOk}/${ws.rowTotal}</strong></span>`;
+  // swap hint
+  const hint=document.getElementById('swap-hint');
+  if(swapSel){
+    const d=resultGrid[swapSel.r][swapSel.c];
+    document.getElementById('swap-name').textContent=d?d.name:'（空格）';
+    hint.classList.add('on');
+  } else { hint.classList.remove('on'); }
+}
+
+function handleCellClick(r,c){
+  if(!swapSel){ swapSel={r,c}; renderResultGrid(); return; }
+  if(swapSel.r===r&&swapSel.c===c){ swapSel=null; renderResultGrid(); return; }
+  const tmp=resultGrid[swapSel.r][swapSel.c];
+  resultGrid[swapSel.r][swapSel.c]=resultGrid[r][c];
+  resultGrid[r][c]=tmp;
+  swapSel=null; renderResultGrid();
+}
+
+function exportText(){
+  let txt='=== 座位分配結果 ===\n\n黑板\n\n';
+  for(let r=0;r<6;r++) txt+=resultGrid[r].map(d=>d?d.name.padEnd(4,'　'):'（空）').join(' | ')+'\n';
+  navigator.clipboard.writeText(txt).then(()=>alert('已複製！')).catch(()=>alert('請手動複製'));
+}
+
+// ══════════════════════════════════════════
+//  STUDENT MODE
+// ══════════════════════════════════════════
+async function enterStudentMode(cls, name){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('student-view').style.display='block';
+  currentStudentName=name; classCode=cls;
+  document.getElementById('stu-classname').textContent=`班級：${cls}`;
+  document.getElementById('stu-name-display').textContent=name;
+
+  // 即時監聽 collectStatus
+  sb.channel(`stu-status-${cls}`)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'classes',filter:`id=eq.${cls}`},
+      payload=>{
+        const status=(payload.new.config||{}).collectStatus||'waiting';
+        applyStudentStatus(status);
+      })
+    .subscribe();
+
+  // 讀取 config
+  const {data:cls_data}=await sb.from('classes').select('config').eq('id',cls).single();
+  const cfg=cls_data?.config||{};
+  applyStudentStatus(cfg.collectStatus||'waiting');
+
+  const showDataCard=cfg.permHeight||cfg.permMyopia||cfg.permRank;
+  if(showDataCard) document.getElementById('stu-data-card').style.display='block';
+  document.getElementById('stu-height-field').style.display=cfg.permHeight?'block':'none';
+  document.getElementById('stu-myopia-field').style.display=cfg.permMyopia?'block':'none';
+  document.getElementById('stu-rank-field').style.display=cfg.permRank?'block':'none';
+
+  // 讀取學生現有資料
+  const {data:me}=await sb.from('students').select('*').eq('class_id',cls).eq('name',name).single();
+  if(me){
+    if(me.height) document.getElementById('stu-height').value=me.height;
+    if(me.myopia) document.getElementById('stu-myopia').value=me.myopia;
+    if(me.rank)   document.getElementById('stu-rank').value=me.rank;
+    if(me.wish_nbr) document.getElementById('stu-wish-nbr').value=me.wish_nbr;
+    if(me.wish_row) document.getElementById('stu-wish-row').value=me.wish_row;
+    if(me.submitted){
+      document.getElementById('stu-form-inner').style.display='none';
+      document.getElementById('submit-result').style.display='block';
+    }
+  }
+}
+
+function applyStudentStatus(status){
+  document.getElementById('stu-status-waiting').style.display=status==='waiting'?'block':'none';
+  document.getElementById('stu-status-closed').style.display=status==='closed'?'block':'none';
+  document.getElementById('stu-form-inner').style.display=status==='open'?'block':'none';
+}
+
+async function submitStudentWish(){
+  const cls=classCode, name=currentStudentName;
+  const update={
+    wish_nbr: document.getElementById('stu-wish-nbr').value.trim(),
+    wish_row: document.getElementById('stu-wish-row').value,
+    submitted: true,
+    updated_at: new Date().toISOString(),
+  };
+  if(document.getElementById('stu-height-field').style.display!=='none'){
+    const h=document.getElementById('stu-height').value;
+    if(h) update.height=+h;
+  }
+  if(document.getElementById('stu-myopia-field').style.display!=='none'){
+    const m=document.getElementById('stu-myopia').value;
+    if(m) update.myopia=+m;
+  }
+  if(document.getElementById('stu-rank-field').style.display!=='none'){
+    const r=document.getElementById('stu-rank').value;
+    if(r) update.rank=+r;
+  }
+  const {error}=await sb.from('students').update(update).eq('class_id',cls).eq('name',name);
+  if(error){ alert('送出失敗，請重試'); return; }
+  document.getElementById('stu-form-inner').style.display='none';
+  document.getElementById('submit-result').style.display='block';
+}
+
+// ══════════════════════════════════════════
+//  DEMO
+// ══════════════════════════════════════════
+function loadDemo(){
+  const names=['陳小明','林雅婷','王俊宏','張美玲','李建志','吳雅雯','劉家豪','陳怡君','黃志偉','林淑惠',
+    '楊文傑','蔡佳蓉','許志明','鄭淑芬','謝家豪','洪雅婷','簡文輝','游佳蓉','賴建宏','邱怡萍',
+    '盧志偉','莊雅雯','江文傑','沈淑芬','高家豪','曾美玲','韓志明','馮雅婷','魏俊宏','呂文傑',
+    '石淑芬','田家豪','孫雅雯','葉美玲','方志明'];
+  const wishes=['front','mid','back','','front','','mid','','back','front',
+    '','mid','','back','','front','mid','','','back',
+    'front','','mid','back','','','front','mid','','back',
+    '','','front','','mid'];
+  students=names.map((name,i)=>({
+    name,height:Math.round(155+Math.random()*30),myopia:Math.round(Math.random()*800),rank:i+1,
+    wishNbr:i%4===0?names[(i+1)%35]:'',wishRow:wishes[i]||''
+  }));
+  renderStudentTable();
+  alert('已載入35位範例學生（含部分願望）！');
+}
+
+// ══════════════════════════════════════════
+//  URL PARAM CHECK ON LOAD
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  const p=new URLSearchParams(location.search);
+  if(p.get('mode')==='student'&&p.get('class')&&p.get('name')){
+    enterStudentMode(p.get('class'),p.get('name'));
+  }
+});</script>
+</body>
+</html>
