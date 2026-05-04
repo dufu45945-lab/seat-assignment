@@ -4,240 +4,294 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>班級座位分配系統</title>
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#0f1117;--sur:#1a1d27;--sur2:#22263a;--bdr:#2e3350;--acc:#4f8ef7;--acc2:#f7a44f;--acc3:#4ff7a4;--red:#f74f4f;--txt:#e8eaf0;--txt2:#8b90a8}
+:root{--bg:#0f1117;--sur:#1a1d27;--sur2:#22263a;--bdr:#2e3350;--acc:#4f8ef7;--acc2:#f7a44f;--acc3:#4ff7a4;--red:#f74f4f;--txt:#e8eaf0;--txt2:#8b90a8;--pur:#a44ff7;--ice:#7fcfff}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Helvetica Neue',sans-serif;min-height:100vh}
+body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,.03)1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.03)1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
-.wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:18px 14px}
-
-/* ── LANDING ── */
-#landing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:32px}
-#landing h1{font-family:monospace;font-size:clamp(18px,5vw,32px);font-weight:700;letter-spacing:3px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
-#landing p{color:var(--txt2);font-size:13px;letter-spacing:1px}
-.landing-btns{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
-.big-btn{padding:20px 40px;border-radius:14px;border:1.5px solid var(--bdr);background:var(--sur);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:16px;cursor:pointer;transition:all .2s;text-align:center;min-width:160px}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:16px 12px}
+#landing{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:28px;padding:20px}
+#landing h1{font-family:monospace;font-size:clamp(20px,5vw,34px);font-weight:700;letter-spacing:3px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;cursor:pointer;user-select:none;transition:opacity .2s}
+#landing h1:hover{opacity:.75}
+.landing-btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.big-btn{padding:18px 36px;border-radius:14px;border:1.5px solid var(--bdr);background:var(--sur);color:var(--txt);font-size:15px;cursor:pointer;transition:all .2s;text-align:center;min-width:150px}
 .big-btn:hover{border-color:var(--acc);color:var(--acc);transform:translateY(-2px)}
-.big-btn .icon{font-size:28px;display:block;margin-bottom:8px}
-
-/* ── MODAL ── */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;display:none}
-.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:24px;z-index:901;width:min(360px,90vw);display:none;box-shadow:0 12px 50px rgba(0,0,0,.7)}
-.modal h3{font-family:monospace;font-size:13px;color:var(--acc3);margin-bottom:16px}
-.modal input{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);padding:10px 14px;font-size:14px;font-family:system-ui,-apple-system,sans-serif;outline:none;margin-bottom:12px}
-.modal input:focus{border-color:var(--acc)}
-.modal-btns{display:flex;gap:8px}
-
-/* ── TABS ── */
-header.app-header{text-align:center;margin-bottom:20px}
-header.app-header h2{font-family:monospace;font-size:clamp(13px,3vw,20px);font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-header.app-header p{color:var(--txt2);font-size:11px;margin-top:4px}
-.tabs{display:flex;gap:3px;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:4px;margin-bottom:16px;overflow-x:auto}
-.tab{flex:1;min-width:60px;padding:8px 6px;border:none;background:transparent;color:var(--txt2);font-family:system-ui,-apple-system,sans-serif;font-size:11px;border-radius:7px;cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap}
+.big-btn .icon{font-size:26px;display:block;margin-bottom:6px}
+#login-form-box{width:min(340px,92vw);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:20px;display:none}
+/* DEV/ADMIN */
+#dev-landing{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:24px;padding:20px}
+#admin-view{display:none}
+#dev-view{display:none}
+/* SYNC */
+#sync-dot{position:fixed;bottom:14px;right:14px;z-index:999;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--txt2);background:var(--sur);border:1px solid var(--bdr);border-radius:99px;padding:4px 10px;transition:all .4s;pointer-events:none}
+#sync-dot .dot{width:7px;height:7px;border-radius:50%;background:var(--txt2)}
+#sync-dot.synced .dot{background:var(--acc3);box-shadow:0 0 6px var(--acc3)}
+#sync-dot.synced{border-color:rgba(79,247,164,.3)}
+#sync-dot.error .dot{background:var(--red)}
+/* TABS */
+header.app-header{text-align:center;margin-bottom:16px}
+header.app-header h2{font-family:monospace;font-size:clamp(12px,3vw,18px);font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header.app-header p{color:var(--txt2);font-size:11px;margin-top:3px}
+.tabs{display:flex;gap:3px;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:4px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:48px;padding:7px 4px;border:none;background:transparent;color:var(--txt2);font-size:11px;border-radius:7px;cursor:pointer;transition:all .2s;text-align:center;white-space:nowrap}
 .tab.active{background:var(--sur2);color:var(--acc);border:1px solid var(--bdr)}
 .panel{display:none}.panel.active{display:block}
-
-/* ── CARDS ── */
-.card{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:16px;margin-bottom:12px}
-.card h3{font-size:12px;color:var(--acc3);letter-spacing:1px;margin-bottom:12px;font-family:monospace}
-
-/* ── FORM ELEMENTS ── */
-.field{margin-bottom:12px}
-.field label{display:block;font-size:11px;color:var(--txt2);margin-bottom:4px}
-.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);padding:8px 12px;font-size:13px;font-family:system-ui,-apple-system,sans-serif;outline:none}
+/* CARDS */
+.card{background:var(--sur);border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{font-size:12px;color:var(--acc3);letter-spacing:1px;margin-bottom:10px;font-family:monospace}
+/* FORM */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--txt2);margin-bottom:3px}
+.field input,.field select{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);padding:8px 10px;font-size:13px;outline:none}
 .field input:focus,.field select:focus{border-color:var(--acc)}
 .field select option{background:var(--bg)}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(46,51,80,.4)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(46,51,80,.4)}
 .toggle-row:last-child{border-bottom:none}
 .toggle-row label{font-size:12px;color:var(--txt2)}
-.toggle{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle{position:relative;width:38px;height:20px;cursor:pointer}
 .toggle input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:var(--bdr);border-radius:22px;transition:.3s}
-.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-slider{position:absolute;inset:0;background:var(--bdr);border-radius:20px;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s}
 .toggle input:checked+.toggle-slider{background:var(--acc)}
 .toggle input:checked+.toggle-slider::before{transform:translateX(18px)}
-
-/* ── WEIGHT SLIDERS ── */
-.w-row{display:grid;grid-template-columns:130px 1fr 44px;align-items:center;gap:10px;margin-bottom:10px}
+/* SLIDERS */
+.w-row{display:grid;grid-template-columns:130px 1fr 42px;align-items:center;gap:8px;margin-bottom:8px}
 .w-label{font-size:12px;color:var(--txt2)}
-.w-label span{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.w-label span{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
 input[type=range]{width:100%;accent-color:var(--acc);cursor:pointer}
 .w-val{font-family:monospace;font-size:12px;color:var(--acc);text-align:right}
-.formula-box{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:11px 14px;font-family:monospace;font-size:11px;color:var(--acc2);margin-bottom:16px;line-height:1.9}
-
-/* ── SEAT MAP ── */
-.blackboard{background:linear-gradient(135deg,#1a3a2a,#0f2a1a);border:2px solid #3a6a4a;border-radius:6px;text-align:center;padding:7px;color:#7fd4a0;font-size:12px;letter-spacing:3px;margin:0 auto 10px;width:58%;font-family:monospace}
-.seat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:8px}
-.seat-cell{border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 2px;min-height:60px;cursor:pointer;border:1.5px solid transparent;transition:border .15s}
+.formula-box{background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:10px 13px;font-family:monospace;font-size:11px;color:var(--acc2);margin-bottom:14px;line-height:1.9}
+/* SEAT MAP */
+.blackboard{background:linear-gradient(135deg,#1a3a2a,#0f2a1a);border:2px solid #3a6a4a;border-radius:6px;text-align:center;padding:6px;color:#7fd4a0;font-size:12px;letter-spacing:3px;margin:0 auto 8px;width:55%;font-family:monospace}
+.seat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:6px}
+.seat-cell{border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px;min-height:86px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;position:relative;overflow:hidden}
 .seat-cell:hover{border-color:var(--acc)}
-.sc-range{font-family:monospace;font-size:10px;font-weight:700;color:#fff;line-height:1.3;text-align:center}
-.sc-lbl{font-size:8px;color:rgba(255,255,255,.4);margin-top:1px}
-.sc-bar{width:78%;height:3px;border-radius:2px;margin-top:4px;background:rgba(255,255,255,.12);overflow:hidden}
-.sc-bar-inner{height:100%;border-radius:2px;background:rgba(255,255,255,.5)}
-
-/* ── TABLE ── */
+.seat-cell.disabled-cell{opacity:.35;filter:grayscale(.8)}
+.seat-type-badge{position:absolute;top:3px;right:3px;font-size:11px;line-height:1}
+.sc-lbl{font-size:8px;color:rgba(255,255,255,.45);margin-bottom:3px}
+.dual-slider-wrap{width:92%;display:flex;flex-direction:column;gap:3px}
+.slider-row{display:flex;align-items:center;gap:2px}
+.slider-row input[type=range]{flex:1;height:3px;margin:0;padding:0;cursor:pointer}
+.slider-val{font-size:9px;font-family:monospace;width:18px;text-align:right;flex-shrink:0}
+/* TYPE MENU */
+.type-menu{position:fixed;z-index:800;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:6px;box-shadow:0 8px 30px rgba(0,0,0,.6);display:none;min-width:150px}
+.type-menu-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--txt);transition:background .15s}
+.type-menu-item:hover{background:var(--sur2)}
+.type-menu-item.active{background:rgba(79,142,247,.15);color:var(--acc)}
+/* TABLE */
 .tbl-wrap{overflow-x:auto;border-radius:8px;border:1px solid var(--bdr)}
-table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
 thead tr{background:var(--sur2)}
-th{padding:8px 10px;text-align:left;color:var(--txt2);font-weight:500;font-size:11px;border-bottom:1px solid var(--bdr);white-space:nowrap}
-td{padding:5px 7px;border-bottom:1px solid rgba(46,51,80,.4)}
+th{padding:8px 7px;text-align:left;color:var(--txt2);font-weight:500;font-size:11px;border-bottom:1px solid var(--bdr);white-space:nowrap}
+td{padding:4px 5px;border-bottom:1px solid rgba(46,51,80,.4)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(79,142,247,.04)}
-td input,td select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--bdr);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:12px;padding:2px 3px;outline:none}
+td input,td select{width:100%;background:transparent;border:none;border-bottom:1px solid var(--bdr);color:var(--txt);font-size:12px;padding:2px;outline:none}
 td input:focus,td select:focus{border-color:var(--acc)}
 td select option{background:var(--bg);color:var(--txt)}
-.wish-ok{color:var(--acc3);font-size:13px}
-.wish-part{color:var(--acc2);font-size:13px}
-.wish-no{color:var(--red);font-size:13px}
-
-/* ── STATUS PANEL ── */
-.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:14px}
-.stu-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;font-size:12px}
-.stu-card .sname{font-weight:700;color:var(--txt);margin-bottom:4px}
+/* STATUS */
+.status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:7px;margin-bottom:12px}
+.stu-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:9px;padding:9px 10px;font-size:12px}
+.stu-card .sname{font-weight:700;color:var(--txt);margin-bottom:3px}
 .stu-card .sstat{font-size:10px;color:var(--txt2)}
-.stu-card.done{border-color:var(--acc3)}
-.stu-card.done .sstat{color:var(--acc3)}
+.stu-card.done{border-color:var(--acc3)}.stu-card.done .sstat{color:var(--acc3)}
 .stu-card.partial{border-color:var(--acc2)}
-.prog-bar{height:6px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.prog-bar{height:5px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-bottom:12px}
 .prog-inner{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc3));border-radius:3px;transition:width .5s}
-
-/* ── RESULT GRID ── */
+.countdown-display{font-family:monospace;font-size:28px;font-weight:700;color:var(--acc3);text-align:center;padding:12px;letter-spacing:2px}
+.countdown-display.urgent{color:var(--red);animation:blink 1s ease infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.4}}
+/* RESULT */
 .result-seat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:10px}
-.result-cell{border-radius:7px;padding:5px 3px;text-align:center;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1.5px solid transparent;transition:all .15s;cursor:pointer;user-select:none}
+.result-cell{border-radius:7px;padding:4px 2px;text-align:center;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:1.5px solid transparent;transition:all .15s;cursor:pointer;user-select:none;position:relative}
 .result-cell:hover{border-color:rgba(255,255,255,.3)}
 .result-cell.selected{border-color:var(--acc2)!important;box-shadow:0 0 0 2px rgba(247,164,79,.25)}
+.result-cell.disabled-result{opacity:.3;pointer-events:none;border:1.5px dashed rgba(255,255,255,.1)!important;background:rgba(46,51,80,.2)!important}
 .result-cell .r-name{font-size:11px;font-weight:500;color:var(--txt);line-height:1.2}
 .result-cell .r-score{font-family:monospace;font-size:9px;color:rgba(255,255,255,.3)}
-.result-cell .r-wish{font-size:10px;line-height:1}
+.result-cell .r-wish{font-size:10px}
+.result-cell .r-type{position:absolute;top:2px;right:3px;font-size:9px;opacity:.6}
 .result-cell.empty-cell{background:rgba(255,255,255,.02)!important;border:1.5px dashed rgba(255,255,255,.1)}
 .result-cell.empty-cell:hover,.result-cell.drop-target{border-color:var(--acc3)!important}
 @keyframes pulse{from{box-shadow:0 0 0 0 rgba(79,247,164,.1)}to{box-shadow:0 0 0 5px rgba(79,247,164,.25)}}
 .result-cell.drop-target{animation:pulse .7s ease infinite alternate}
-.swap-hint{background:rgba(247,164,79,.08);border:1px solid rgba(247,164,79,.25);border-radius:8px;padding:7px 12px;font-size:11px;color:var(--acc2);margin-bottom:10px;display:none}
+.swap-hint{background:rgba(247,164,79,.08);border:1px solid rgba(247,164,79,.25);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--acc2);margin-bottom:8px;display:none}
 .swap-hint.on{display:block}
-.wish-stats{display:flex;gap:16px;font-size:12px;margin-bottom:12px;flex-wrap:wrap}
-.wish-stat{display:flex;align-items:center;gap:5px}
-
-/* ── BUTTONS ── */
-.btn{padding:8px 14px;border:1px solid var(--bdr);border-radius:7px;background:var(--sur2);color:var(--txt);font-family:system-ui,-apple-system,sans-serif;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.wish-stats{display:flex;gap:12px;font-size:12px;margin-bottom:10px;flex-wrap:wrap}
+/* BUTTONS */
+.btn{padding:7px 12px;border:1px solid var(--bdr);border-radius:7px;background:var(--sur2);color:var(--txt);font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap}
 .btn:hover{border-color:var(--acc);color:var(--acc)}
 .btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
 .btn.pri:hover{background:#3a7ae0}
 .btn.ok{background:#1a3a2a;border-color:var(--acc3);color:var(--acc3)}
-.btn.sm{padding:4px 8px;font-size:11px}
+.btn.sm{padding:3px 6px;font-size:10px}
 .btn.danger{border-color:var(--red);color:var(--red)}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.tip{font-size:11px;color:var(--txt2);background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:8px 11px;margin-top:8px;line-height:1.6}
+.btn.pur-btn{background:var(--pur);border-color:var(--pur);color:#fff}
+.btn-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+.tip{font-size:11px;color:var(--txt2);background:var(--sur2);border:1px solid var(--bdr);border-radius:6px;padding:7px 10px;margin-top:7px;line-height:1.6}
 .tip strong{color:var(--acc2)}
-.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;font-family:monospace;font-weight:700}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--txt2);margin-top:6px}
-.legend-dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
-
-/* ── QR CODE ── */
-.qr-panel{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.qr-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:12px;text-align:center}
-.qr-card .qname{font-size:12px;font-weight:700;margin-bottom:8px}
-.qr-card .qr-box{display:flex;justify-content:center;margin-bottom:6px}
-.qr-card .qr-box canvas,.qr-card .qr-box img{border-radius:6px}
-.qr-card .qlink{font-size:9px;color:var(--txt2);word-break:break-all}
-
-/* ── STUDENT MODE ── */
-#student-view{display:none;max-width:480px;margin:0 auto}
-.stu-hero{text-align:center;padding:32px 0 20px}
-.stu-hero h2{font-family:monospace;font-size:20px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
-.stu-hero .classname{font-size:13px;color:var(--txt2)}
-.stu-name-display{font-family:monospace;font-size:24px;color:var(--acc2);font-weight:700;margin:12px 0 4px;text-align:center}
-.section-title{font-size:11px;color:var(--acc3);letter-spacing:1px;font-family:monospace;margin-bottom:10px}
-.submit-result{text-align:center;padding:24px;display:none}
-.submit-result .big-icon{font-size:48px;margin-bottom:12px}
-.submit-result h3{font-size:18px;color:var(--acc3);margin-bottom:6px}
+.badge{display:inline-block;padding:2px 6px;border-radius:99px;font-size:10px;font-family:monospace;font-weight:700}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--txt2);margin-top:5px}
+.legend-dot{width:8px;height:8px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle}
+/* QR */
+.qr-single{display:flex;flex-direction:column;align-items:center;gap:14px}
+.qr-box-large{background:var(--sur2);border:1px solid var(--bdr);border-radius:14px;padding:20px;text-align:center}
+/* STUDENT */
+#student-view{display:none;max-width:460px;margin:0 auto}
+.stu-hero{text-align:center;padding:28px 0 16px}
+.stu-hero h2{font-family:monospace;font-size:18px;background:linear-gradient(135deg,var(--acc),var(--acc3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:5px}
+.stu-name-display{font-family:monospace;font-size:22px;color:var(--acc2);font-weight:700;margin:10px 0 3px;text-align:center}
+.section-title{font-size:11px;color:var(--acc3);letter-spacing:1px;font-family:monospace;margin-bottom:8px}
+.submit-result{text-align:center;padding:22px;display:none}
+.submit-result .big-icon{font-size:44px;margin-bottom:10px}
+.submit-result h3{font-size:17px;color:var(--acc3);margin-bottom:5px}
 .submit-result p{font-size:12px;color:var(--txt2)}
-
-/* ── RANGE EDITOR ── */
-.re-editor{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px;z-index:901;width:min(300px,88vw);box-shadow:0 8px 40px rgba(0,0,0,.7);display:none}
-.re-editor h4{font-family:monospace;font-size:12px;color:var(--acc3);margin-bottom:14px}
-.re-editor label{font-size:11px;color:var(--txt2);display:block;margin-bottom:3px}
-.re-editor input[type=number]{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:7px;color:var(--txt);padding:8px 10px;font-size:13px;font-family:monospace;margin-bottom:10px;outline:none}
-.re-preview{background:var(--bg);border:1px solid var(--bdr);border-radius:7px;padding:7px;font-family:monospace;font-size:12px;color:var(--acc2);text-align:center;margin-bottom:12px}
+.stu-countdown{background:rgba(79,247,164,.06);border:1px solid rgba(79,247,164,.2);border-radius:10px;padding:10px;text-align:center;margin-bottom:12px}
+.stu-countdown .label{font-size:11px;color:var(--txt2);margin-bottom:3px}
+/* WISH BUTTONS */
+.wish-3btns{display:flex;gap:6px;margin-top:5px}
+.wish-3btn{flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--sur2);color:var(--txt2);font-size:11px;cursor:pointer;transition:all .2s;text-align:center;line-height:1.4}
+.wish-3btn:hover{border-color:var(--acc)}
+.wish-3btn.selected-cold{border-color:var(--ice);background:rgba(127,207,255,.1);color:var(--ice)}
+.wish-3btn.selected-window-yes{border-color:var(--acc3);background:rgba(79,247,164,.1);color:var(--acc3)}
+.wish-3btn.selected-window-no{border-color:var(--red);background:rgba(247,79,79,.1);color:var(--red)}
+/* DEV PANEL */
+.dev-metric{background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:10px 13px;margin-bottom:8px}
+.dev-metric .dm-label{font-size:10px;color:var(--txt2);margin-bottom:3px;font-family:monospace}
+.dev-metric .dm-val{font-family:monospace;font-size:16px;font-weight:700}
+.conflict-item{background:rgba(247,79,79,.07);border:1px solid rgba(247,79,79,.2);border-radius:7px;padding:8px 11px;margin-bottom:6px;font-size:12px}
+.conflict-item .ci-name{color:var(--acc2);font-weight:700;margin-bottom:2px}
+.conflict-item .ci-reason{color:var(--txt2);font-size:11px}
+.log-list{max-height:200px;overflow-y:auto;font-family:monospace;font-size:11px;color:var(--txt2);background:var(--bg);border:1px solid var(--bdr);border-radius:7px;padding:8px}
+.log-item{padding:2px 0;border-bottom:1px solid rgba(46,51,80,.3)}
+.log-item:last-child{border-bottom:none}
+.log-item .li-time{color:var(--acc);margin-right:8px}
+.log-item .li-action{color:var(--acc3)}
+/* ADMIN */
+.class-admin-card{background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.class-admin-card .ca-info{flex:1}
+.class-admin-card .ca-id{font-family:monospace;font-size:14px;font-weight:700;color:var(--acc2)}
+.class-admin-card .ca-meta{font-size:11px;color:var(--txt2);margin-top:2px}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none}
+.modal-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px;z-index:701;width:min(340px,90vw);box-shadow:0 8px 40px rgba(0,0,0,.7);display:none}
+.modal-box h4{font-family:monospace;font-size:13px;color:var(--acc3);margin-bottom:14px}
 </style>
 </head>
 <body>
+<div id="sync-dot"><span class="dot"></span><span id="sync-text">—</span></div>
 
-<!-- ══ LANDING ══ -->
+<!-- TYPE MENU -->
+<div class="type-menu" id="type-menu">
+  <div class="type-menu-item" onclick="setCellType('normal')">⬜ 普通座位</div>
+  <div class="type-menu-item" onclick="setCellType('ac')">❄️ 冷氣出風口</div>
+  <div class="type-menu-item" onclick="setCellType('window')">🪟 窗戶旁</div>
+  <div class="type-menu-item" onclick="toggleCellDisabled()" id="type-menu-disable">🚫 停用此格</div>
+</div>
+
+<!-- LANDING -->
 <div id="landing">
   <div>
-    <h1>SEAT ASSIGNMENT</h1>
-    <p style="text-align:center;margin-top:6px">班級座位科學分配系統</p>
+    <h1 onclick="handleTitleClick()">SEAT ASSIGNMENT</h1>
+    <p style="text-align:center;margin-top:5px;color:var(--txt2);font-size:12px">班級座位科學分配系統</p>
   </div>
   <div class="landing-btns">
     <button class="big-btn" onclick="showLoginForm('teacher')"><span class="icon">👩‍🏫</span>老師模式</button>
     <button class="big-btn" onclick="showLoginForm('student')"><span class="icon">🎒</span>學生模式</button>
   </div>
-
-  <!-- 內嵌登入表單 -->
-  <div id="login-form-box" style="display:none;width:min(340px,90vw);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px">
-    <h3 id="login-form-title" style="font-size:13px;color:var(--acc3);margin-bottom:16px;font-family:monospace"></h3>
+  <div id="login-form-box">
+    <h3 id="login-form-title" style="font-size:13px;color:var(--acc3);margin-bottom:14px;font-family:monospace"></h3>
     <div id="login-form-inner"></div>
-    <p id="login-form-err" style="font-size:11px;color:var(--red);margin-bottom:10px;display:none">帳號、密碼或班級代碼錯誤</p>
+    <p id="login-form-err" style="font-size:11px;color:var(--red);margin-bottom:8px;display:none">帳號或密碼錯誤</p>
     <div style="display:flex;gap:8px">
-      <button class="btn pri" style="flex:1" onclick="submitLoginForm()">登入 / 進入</button>
+      <button class="btn pri" style="flex:1" onclick="submitLoginForm()">進入</button>
       <button class="btn" style="flex:1" onclick="hideLoginForm()">取消</button>
     </div>
+    <div id="forgot-link" style="text-align:center;margin-top:10px;font-size:11px;color:var(--acc);cursor:pointer;display:none" onclick="showForgotModal()">忘記密碼？</div>
   </div>
-
   <p style="font-size:11px;color:var(--txt2)">powered by Supabase · 即時同步</p>
 </div>
 
-<!-- ══ TEACHER APP ══ -->
+<!-- DEV LANDING -->
+<div id="dev-landing">
+  <div><h1 style="color:var(--pur);font-family:monospace;letter-spacing:2px;font-size:clamp(16px,4vw,26px)">🔬 DEVELOPER PANEL</h1><p style="color:var(--txt2);font-size:12px;text-align:center;margin-top:5px">系統監控 · 僅限授權人員</p></div>
+  <div style="width:min(320px,90vw);background:var(--sur);border:1px solid var(--pur);border-radius:14px;padding:20px">
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:12px">使用授權帳號登入</p>
+    <div class="field"><label>Email</label><input id="dev-email" type="email" placeholder="your@gmail.com"></div>
+    <div class="field"><label>密碼</label><input id="dev-pw" type="password" placeholder="密碼"></div>
+    <p id="dev-err" style="font-size:11px;color:var(--red);margin-bottom:8px;display:none">Email 或密碼錯誤，或無權限</p>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn pur-btn" style="flex:1" onclick="submitDevLogin()">登入</button>
+      <button class="btn" style="flex:1" onclick="backToLanding()">返回</button>
+    </div>
+    <div style="text-align:center"><span style="font-size:11px;color:var(--acc);cursor:pointer" onclick="sendDevPasswordReset()">忘記密碼？寄重設信</span></div>
+    <p id="dev-reset-ok" style="font-size:11px;color:var(--acc3);text-align:center;margin-top:6px;display:none">✅ 重設信已寄出，請查收 Gmail</p>
+  </div>
+</div>
+
+<!-- FORGOT MODAL -->
+<div class="overlay" id="forgot-overlay" onclick="closeForgotModal()"></div>
+<div class="modal-box" id="forgot-modal">
+  <h4>// 忘記密碼</h4>
+  <div id="forgot-inner"></div>
+  <p id="forgot-err" style="font-size:11px;color:var(--red);margin-top:8px;display:none">驗證失敗</p>
+  <p id="forgot-ok" style="font-size:11px;color:var(--acc3);margin-top:8px;display:none">✅ 密碼已重設！</p>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="btn pri" style="flex:1" onclick="submitForgot()">確認</button>
+    <button class="btn" style="flex:1" onclick="closeForgotModal()">取消</button>
+  </div>
+</div>
+
+<!-- TEACHER VIEW -->
 <div id="teacher-view" style="display:none">
 <div class="wrap">
-  <header class="app-header">
-    <h2>👩‍🏫 老師控制台</h2>
-    <p id="class-label">班級：—</p>
-  </header>
+  <header class="app-header"><h2>👩‍🏫 老師控制台</h2><p id="class-label">班級：—</p></header>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('setup')">⚙️ 班級設定</button>
+    <button class="tab active" onclick="switchTab('setup')">⚙️ 設定</button>
     <button class="tab" onclick="switchTab('formula')">⚖️ 公式</button>
     <button class="tab" onclick="switchTab('students')">👥 學生</button>
     <button class="tab" onclick="switchTab('qr')">📱 QR碼</button>
-    <button class="tab" onclick="switchTab('status')">📡 即時狀態</button>
-    <button class="tab" onclick="switchTab('result')">📋 分配結果</button>
+    <button class="tab" onclick="switchTab('status')">📡 狀態</button>
+    <button class="tab" onclick="switchTab('result')">📋 結果</button>
   </div>
 
-  <!-- TAB: 班級設定 -->
   <div id="tab-setup" class="panel active">
     <div class="card">
       <h3>// 班級資訊</h3>
-      <div class="field"><label>班級代碼（學生掃碼時用）</label><input id="cfg-class" placeholder="例：301" oninput="saveCfg()"></div>
-      <div class="field"><label>老師密碼</label><input id="cfg-pass" type="password" placeholder="設定密碼" oninput="saveCfg()"></div>
-      <div class="field"><label>部署網址（用於產生 QR Code）</label><input id="cfg-url" placeholder="https://你的網址.github.io/seat" oninput="saveCfg()"></div>
-      <div class="btn-row" style="margin-top:4px">
-        <button class="btn pri" onclick="saveToSupabase()">☁️ 儲存到 Supabase</button>
-        <button class="btn danger" onclick="resetClass()">🗑 清除本班資料</button>
+      <div class="field"><label>班級代碼</label><input id="cfg-class" placeholder="例：301" oninput="saveCfg()"></div>
+      <div class="field"><label>老師密碼</label><input id="cfg-pass" type="password" oninput="saveCfg()"></div>
+      <div class="field">
+        <label>忘記密碼安全問題</label>
+        <select id="cfg-sq" onchange="onSecQChange()">
+          <option value="">— 請選擇一個問題 —</option>
+          <option value="q1">我的班級有幾位學生？</option>
+          <option value="q2">我任教的科目是什麼？</option>
+          <option value="q3">我的班級代碼數字加總是多少？</option>
+          <option value="q4">我教書幾年了（整數）？</option>
+          <option value="q5">我最喜歡的顏色是什麼？</option>
+          <option value="q6">我的學校名稱是什麼？</option>
+          <option value="custom">✏️ 自訂問題...</option>
+        </select>
+      </div>
+      <div class="field" id="cfg-sq-custom-wrap" style="display:none"><label>自訂問題內容</label><input id="cfg-sq-custom" placeholder="輸入你的安全問題" oninput="saveCfg()"></div>
+      <div class="field"><label>安全問題答案（不區分大小寫）</label><input id="cfg-sa" placeholder="輸入你的答案" oninput="saveCfg()"></div>
+      <div style="font-size:10px;color:var(--txt2);margin-top:-6px;margin-bottom:8px">忘記老師密碼時回答正確即可重設。</div>
+      <div class="btn-row" style="margin-top:6px">
+        <button class="btn pri" onclick="saveToSupabase()">☁️ 儲存</button>
+        <button class="btn danger" onclick="resetClass()">🗑 清除班級</button>
       </div>
     </div>
     <div class="card">
       <h3>// 學生填寫權限</h3>
-      <div class="toggle-row">
-        <label>學生可修改身高</label>
-        <label class="toggle"><input type="checkbox" id="perm-height" onchange="saveCfg()"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="toggle-row">
-        <label>學生可修改近視度數</label>
-        <label class="toggle"><input type="checkbox" id="perm-myopia" onchange="saveCfg()"><span class="toggle-slider"></span></label>
-      </div>
-      <div class="toggle-row">
-        <label>學生可修改班排名次</label>
-        <label class="toggle"><input type="checkbox" id="perm-rank" onchange="saveCfg()"><span class="toggle-slider"></span></label>
-      </div>
+      <div class="toggle-row"><label>學生可修改身高</label><label class="toggle"><input type="checkbox" id="perm-height"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><label>學生可修改近視度數</label><label class="toggle"><input type="checkbox" id="perm-myopia"><span class="toggle-slider"></span></label></div>
+      <div class="toggle-row"><label>學生可修改班排名次</label><label class="toggle"><input type="checkbox" id="perm-rank"><span class="toggle-slider"></span></label></div>
     </div>
   </div>
 
-  <!-- TAB: 公式 -->
   <div id="tab-formula" class="panel">
     <div class="card">
       <h3>// 需求分數公式</h3>
@@ -249,26 +303,20 @@ td select option{background:var(--bg);color:var(--txt)}
     </div>
     <div class="card">
       <h3>// 願望滿足權重</h3>
-      <div class="w-row"><div class="w-label"><span style="background:#4ff7a4"></span>鄰座願望</div><input type="range" id="w-nbr" min="0" max="100" value="60" oninput="updateWishWeights()"><div class="w-val" id="wv-nbr">60</div></div>
-      <div class="w-row"><div class="w-label"><span style="background:#a44ff7"></span>排別願望</div><input type="range" id="w-row-w" min="0" max="100" value="40" oninput="updateWishWeights()"><div class="w-val" id="wv-row-w">40</div></div>
-      <div class="btn-row" style="margin-top:4px">
-        <button class="btn ok" onclick="setWishDefault()">✨ 盡量滿足預設</button>
-      </div>
-      <div class="tip"><strong>說明：</strong>願望權重越高，後處理對調時此類願望優先度越高。不影響健康需求（近視深者仍優先前排）。</div>
+      <div class="w-row"><div class="w-label"><span style="background:#4ff7a4"></span>鄰座願望</div><input type="range" id="w-nbr" min="0" max="100" value="35" oninput="updateWishWeights()"><div class="w-val" id="wv-nbr">35</div></div>
+      <div class="w-row"><div class="w-label"><span style="background:#a44ff7"></span>排別願望</div><input type="range" id="w-row-w" min="0" max="100" value="30" oninput="updateWishWeights()"><div class="w-val" id="wv-row-w">30</div></div>
+      <div class="w-row"><div class="w-label"><span style="background:#7fcfff"></span>冷氣距離</div><input type="range" id="w-cold" min="0" max="100" value="20" oninput="updateWishWeights()"><div class="w-val" id="wv-cold">20</div></div>
+      <div class="w-row"><div class="w-label"><span style="background:#4ff7a4"></span>窗戶偏好</div><input type="range" id="w-window" min="0" max="100" value="15" oninput="updateWishWeights()"><div class="w-val" id="wv-window">15</div></div>
+      <div class="btn-row" style="margin-top:4px"><button class="btn ok" onclick="setWishDefault()">✨ 平衡預設</button></div>
     </div>
     <div class="card">
-      <h3>// 座位分數範圍地圖</h3>
+      <h3>// 座位地圖 <span style="font-size:10px;color:var(--txt2);font-family:system-ui">雙滑桿調分數 · 點格子設類型/停用</span></h3>
       <div class="blackboard">█ 黑 板 █</div>
       <div class="seat-grid" id="seat-score-grid"></div>
-      <div class="legend">
-        <span><span class="legend-dot" style="background:#f74f4f"></span>高分（前排優先）</span>
-        <span><span class="legend-dot" style="background:#4f8ef7"></span>低分（後排優先）</span>
-      </div>
-      <div class="tip">點擊格子調整分數範圍。分配以中點排序。</div>
+      <div class="legend"><span><span class="legend-dot" style="background:#f74f4f"></span>高分前排</span><span><span class="legend-dot" style="background:#4f8ef7"></span>低分後排</span><span>❄️冷氣</span><span>🪟窗戶</span><span>🚫停用</span></div>
     </div>
   </div>
 
-  <!-- TAB: 學生資料 -->
   <div id="tab-students" class="panel">
     <div class="card">
       <h3>// 學生資料管理</h3>
@@ -276,882 +324,857 @@ td select option{background:var(--bg);color:var(--txt)}
         <button class="btn" onclick="addStudent()">＋ 新增</button>
         <button class="btn" onclick="loadDemo()">📥 範例35人</button>
         <button class="btn" onclick="clearStudents()">🗑 清除</button>
-        <button class="btn pri" onclick="saveToSupabase()">☁️ 同步Supabase</button>
-        <button class="btn ok" onclick="switchTab('result');assignSeats()">▶ 執行分配</button>
+        <button class="btn pri" onclick="saveToSupabase()">☁️ 同步</button>
+        <button class="btn ok" onclick="switchTab('result');assignSeats()">▶ 分配</button>
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr>
-            <th>#</th><th>姓名</th><th>身高cm</th><th>近視度</th><th>班排</th>
-            <th>希望鄰座</th><th>希望排別</th><th>需求分</th><th></th>
-          </tr></thead>
+          <thead><tr><th>#</th><th>姓名</th><th>身高</th><th>近視</th><th>班排</th><th>希望鄰座</th><th>希望排別</th><th>怕冷</th><th>窗戶</th><th>密碼</th><th>需求分</th><th></th></tr></thead>
           <tbody id="student-tbody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- TAB: QR碼 -->
   <div id="tab-qr" class="panel">
     <div class="card">
-      <h3>// 學生 QR Code 產生器</h3>
-      <div class="tip" style="margin-bottom:12px">每位學生掃碼後可填寫願望（及老師開放的欄位）。請先在「班級設定」填好部署網址。</div>
-      <div class="btn-row">
-        <button class="btn pri" onclick="generateQRs()">🔄 產生所有 QR Code</button>
-      </div>
-      <div class="qr-panel" id="qr-panel"></div>
+      <h3>// QR Code — 班級入口</h3>
+      <div class="tip" style="margin-bottom:12px">產生一個 QR Code，學生掃碼進入班級入口，再手動輸入姓名＋密碼登入。</div>
+      <div class="btn-row"><button class="btn pri" onclick="generateClassQR()">🔄 產生班級 QR Code</button></div>
+      <div class="qr-single" id="qr-panel"></div>
     </div>
   </div>
 
-  <!-- TAB: 即時狀態 -->
   <div id="tab-status" class="panel">
     <div class="card">
       <h3>// 填寫狀態控制</h3>
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
-        <div id="collect-status-badge" style="padding:6px 14px;border-radius:99px;font-size:12px;font-family:monospace;font-weight:700;background:rgba(46,51,80,.5);color:var(--txt2)">⏸ 尚未開放</div>
-        <button class="btn ok" onclick="setCollectStatus('open')">📬 開放填寫</button>
-        <button class="btn danger" onclick="setCollectStatus('closed')">🔒 截止填寫</button>
-        <button class="btn" onclick="setCollectStatus('waiting')">⏸ 重設為等待</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <div id="collect-status-badge" style="padding:5px 12px;border-radius:99px;font-size:12px;font-family:monospace;font-weight:700;background:rgba(46,51,80,.5);color:var(--txt2)">⏸ 等待中</div>
+        <button class="btn ok" onclick="setCollectStatus('open')">📬 開放</button>
+        <button class="btn danger" onclick="setCollectStatus('closed')">🔒 截止</button>
+        <button class="btn" onclick="setCollectStatus('waiting')">⏸ 重設</button>
       </div>
-      <div class="tip" style="margin-bottom:14px">開放填寫後學生才能送出願望；截止後才能執行座位分配。</div>
+      <div class="field"><label>截止時間（到時自動截止）</label><input type="datetime-local" id="deadline-input" oninput="setDeadline()"></div>
+      <div id="teacher-countdown" style="display:none" class="countdown-display">--:--</div>
     </div>
     <div class="card">
-      <h3>// 學生填寫即時狀態</h3>
+      <h3>// 即時填寫狀態</h3>
       <div class="prog-bar"><div class="prog-inner" id="prog-inner" style="width:0%"></div></div>
-      <p id="prog-text" style="font-size:12px;color:var(--txt2);margin-bottom:14px">0 / 0 位學生已填寫</p>
+      <p id="prog-text" style="font-size:12px;color:var(--txt2);margin-bottom:12px">0 / 0 位學生已填寫</p>
       <div class="status-grid" id="status-grid"></div>
     </div>
   </div>
 
-  <!-- TAB: 分配結果 -->
   <div id="tab-result" class="panel">
     <div class="card">
       <h3>// ASSIGNED SEAT MAP</h3>
-      <div id="assign-locked-notice" style="display:none;background:rgba(247,79,79,.08);border:1px solid rgba(247,79,79,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:12px">
-        🔒 填寫尚未截止，無法執行分配。請至「即時狀態」頁點「截止填寫」後再分配。
-      </div>
+      <div id="assign-locked-notice" style="display:none;background:rgba(247,79,79,.08);border:1px solid rgba(247,79,79,.3);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--red);margin-bottom:10px">🔒 請先截止填寫再執行分配。</div>
       <div class="wish-stats" id="wish-stats"></div>
-      <div id="swap-hint" class="swap-hint">✦ 已選取：<strong id="swap-name"></strong>　→ 點目標格完成移動，再點同格取消</div>
-      <div class="blackboard" style="margin-bottom:12px">█ 黑 板 █</div>
+      <div id="swap-hint" class="swap-hint">✦ 已選取：<strong id="swap-name"></strong> → 點目標格移動，再點同格取消</div>
+      <div class="blackboard" style="margin-bottom:10px">█ 黑 板 █</div>
       <div class="result-seat-grid" id="result-grid"></div>
-      <div class="btn-row" style="margin-top:10px">
-        <button class="btn pri" onclick="assignSeats()">🔄 執行／重新分配</button>
-        <button class="btn" onclick="exportText()">📋 複製結果</button>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn pri" onclick="assignSeats()">🔄 執行分配</button>
+        <button class="btn" onclick="exportText()">📋 複製</button>
       </div>
-      <div class="tip"><strong>願望圖示：</strong>✅ 完全達成　🔶 部分達成　❌ 未達成</div>
+      <div class="tip"><strong>願望：</strong>✅ 全達成　🔶 部分　❌ 未達成　│　🚫 停用格不參與分配</div>
     </div>
   </div>
-</div><!-- .wrap -->
-</div><!-- #teacher-view -->
+</div>
+</div>
 
-<!-- ══ STUDENT VIEW ══ -->
+<!-- STUDENT VIEW -->
 <div id="student-view">
 <div class="wrap">
   <div class="stu-hero">
     <h2>SEAT WISH</h2>
-    <div class="classname" id="stu-classname">班級：—</div>
+    <div style="font-size:12px;color:var(--txt2)" id="stu-classname">班級：—</div>
     <div class="stu-name-display" id="stu-name-display">—</div>
     <div style="font-size:11px;color:var(--txt2)">填寫你的座位願望</div>
   </div>
-
   <div id="stu-form">
-    <!-- 狀態提示 -->
-    <div id="stu-status-waiting" style="display:none" class="card" style="text-align:center">
-      <div style="font-size:36px;margin-bottom:12px">⏸</div>
-      <div style="font-size:15px;color:var(--txt2)">老師尚未開放填寫，請稍候。</div>
+    <div id="stu-status-waiting" style="display:none" class="card"><div style="font-size:32px;text-align:center;margin-bottom:8px">⏸</div><div style="font-size:14px;color:var(--txt2);text-align:center">老師尚未開放填寫，請稍候。</div></div>
+    <div id="stu-status-closed" style="display:none" class="card"><div style="font-size:32px;text-align:center;margin-bottom:8px">🔒</div><div style="font-size:14px;color:var(--txt2);text-align:center">填寫已截止，感謝你的參與！</div></div>
+    <div id="stu-form-inner" style="display:none">
+      <div class="stu-countdown" id="stu-countdown-box" style="display:none"><div class="label">距截止還剩</div><div class="countdown-display" id="stu-countdown-display">--:--</div></div>
+      <div class="card" id="stu-data-card" style="display:none">
+        <div class="section-title">// 確認個人資料</div>
+        <div id="stu-height-field" class="field" style="display:none"><label>身高（cm）</label><input type="number" id="stu-height" placeholder="165"></div>
+        <div id="stu-myopia-field" class="field" style="display:none"><label>近視度數</label><input type="number" id="stu-myopia" placeholder="200"></div>
+        <div id="stu-rank-field" class="field" style="display:none"><label>班排名次</label><input type="number" id="stu-rank" placeholder="15"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">// 座位願望</div>
+        <div class="field"><label>希望坐在誰旁邊？</label><select id="stu-wish-nbr"><option value="">不指定</option></select></div>
+        <div class="field"><label>希望坐在哪一區？</label><select id="stu-wish-row"><option value="">不指定</option><option value="front">前排（1~2排）</option><option value="mid">中排（3~4排）</option><option value="back">後排（5~6排）</option></select></div>
+        <div class="field" style="margin-top:10px">
+          <label>❄️ 對冷氣的偏好？</label>
+          <div class="wish-3btns">
+            <div class="wish-3btn" onclick="selectCold(1)" data-v="1">🥶 很怕冷<br><small>遠離冷氣</small></div>
+            <div class="wish-3btn" onclick="selectCold(3)" data-v="3">😐 無所謂<br><small>隨機即可</small></div>
+            <div class="wish-3btn" onclick="selectCold(5)" data-v="5">🔥 很怕熱<br><small>靠近冷氣</small></div>
+          </div>
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label>🪟 對窗戶的偏好？</label>
+          <div class="wish-3btns">
+            <div class="wish-3btn" onclick="selectWindow('yes')" data-w="yes">✅ 希望坐窗戶旁<br><small>喜歡採光/通風</small></div>
+            <div class="wish-3btn" onclick="selectWindow('')" data-w="">😐 無所謂<br><small>隨機即可</small></div>
+            <div class="wish-3btn" onclick="selectWindow('no')" data-w="no">❌ 不想坐窗戶旁<br><small>怕曬/冷風</small></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div class="section-title">// 個人安全問題（忘記密碼時使用）</div>
+        <div class="field">
+          <label>選擇安全問題</label>
+          <select id="stu-sq" onchange="onStuSecQChange()">
+            <option value="">— 請選擇 —</option>
+            <option value="q1">我最喜歡的科目是什麼？</option>
+            <option value="q2">我的生日是幾月幾號？（例：0315）</option>
+            <option value="q3">我最喜歡的顏色是什麼？</option>
+            <option value="q4">我的座號是幾號？</option>
+            <option value="q5">我最喜歡的食物是什麼？</option>
+            <option value="custom">✏️ 自訂問題...</option>
+          </select>
+        </div>
+        <div class="field" id="stu-sq-custom-wrap" style="display:none"><label>自訂問題內容</label><input id="stu-sq-custom" placeholder="輸入你的安全問題"></div>
+        <div class="field"><label>答案（不區分大小寫）</label><input id="stu-sa" placeholder="輸入答案"></div>
+        <button class="btn ok" style="width:100%;margin-top:4px" onclick="saveStudentSecQ()">🔒 單獨儲存安全問題</button>
+        <p id="stu-sq-saved" style="font-size:11px;color:var(--acc3);text-align:center;margin-top:6px;display:none">✅ 安全問題已儲存</p>
+      </div>
+      <button class="btn pri" style="width:100%;padding:13px;font-size:14px;border-radius:10px;margin-top:4px" onclick="submitStudentWish()">✉️ 送出願望</button>
     </div>
-    <div id="stu-status-closed" style="display:none" class="card" style="text-align:center">
-      <div style="font-size:36px;margin-bottom:12px">🔒</div>
-      <div style="font-size:15px;color:var(--txt2)">填寫已截止，感謝你的參與！</div>
-    </div>
-
-    <div id="stu-form-inner">
-    <div id="stu-form-inner">
-    <!-- 個人資料確認（依老師設定顯示） -->
-    <div class="card" id="stu-data-card" style="display:none">
-      <div class="section-title">// 確認個人資料</div>
-      <div id="stu-height-field" class="field" style="display:none">
-        <label>身高（cm）</label>
-        <input type="number" id="stu-height" placeholder="165">
-      </div>
-      <div id="stu-myopia-field" class="field" style="display:none">
-        <label>近視度數</label>
-        <input type="number" id="stu-myopia" placeholder="200">
-      </div>
-      <div id="stu-rank-field" class="field" style="display:none">
-        <label>班排名次</label>
-        <input type="number" id="stu-rank" placeholder="15">
-      </div>
-    </div>
-
-    <!-- 願望 -->
-    <div class="card">
-      <div class="section-title">// 座位願望</div>
-      <div class="field">
-        <label>希望坐在誰旁邊？（填同學姓名，左右或前後相鄰皆算）</label>
-        <input type="text" id="stu-wish-nbr" placeholder="例：林雅婷（可不填）">
-      </div>
-      <div class="field">
-        <label>希望坐在哪一區？</label>
-        <select id="stu-wish-row">
-          <option value="">不指定</option>
-          <option value="front">前排（第1~2排）</option>
-          <option value="mid">中排（第3~4排）</option>
-          <option value="back">後排（第5~6排）</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn pri" style="width:100%;padding:14px;font-size:15px;border-radius:10px;margin-top:4px" onclick="submitStudentWish()">
-      ✉️ 送出願望
-    </button>
-    </div><!-- stu-form-inner -->
-
+  </div>
   <div class="submit-result" id="submit-result">
     <div class="big-icon">🎉</div>
     <h3>願望送出成功！</h3>
-    <p>老師已收到你的填寫，等待座位分配結果吧！</p>
+    <p>老師已收到你的填寫。</p>
+    <button class="btn" style="margin-top:14px" id="edit-wish-btn" onclick="reEditWish()">✏️ 修改願望</button>
   </div>
 </div>
 </div>
 
-<!-- Range Editor -->
-<div class="overlay" id="re-overlay" onclick="closeRangeEditor()"></div>
-<div class="re-editor" id="re-editor">
-  <h4 id="re-title">// 調整座位分數範圍</h4>
-  <label>最小分數（0~100）</label>
-  <input type="number" id="re-min" min="0" max="100" oninput="rePreview()">
-  <label>最大分數（0~100）</label>
-  <input type="number" id="re-max" min="0" max="100" oninput="rePreview()">
-  <div class="re-preview" id="re-preview">中點：—</div>
-  <div class="modal-btns">
-    <button class="btn pri" style="flex:1" onclick="saveRangeEditor()">確認</button>
-    <button class="btn" style="flex:1" onclick="closeRangeEditor()">取消</button>
+<!-- ADMIN VIEW -->
+<div id="admin-view">
+<div class="wrap">
+  <header class="app-header">
+    <h2 style="background:linear-gradient(135deg,var(--pur),var(--acc));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">🔬 超級管理員面板</h2>
+    <p id="admin-email-label" style="color:var(--pur)">—</p>
+  </header>
+  <div class="card">
+    <h3>// 系統監控</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:10px">
+      <div class="dev-metric"><div class="dm-label">SUPABASE PING</div><div class="dm-val" id="dev-ping" style="color:var(--acc3)">—</div></div>
+      <div class="dev-metric"><div class="dm-label">班級總數</div><div class="dm-val" id="admin-class-count" style="color:var(--acc)">0</div></div>
+      <div class="dev-metric"><div class="dm-label">學生總數</div><div class="dm-val" id="admin-student-count" style="color:var(--acc2)">0</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="pingSupabase()">🔄 測延遲</button>
+      <button class="btn" onclick="loadAdminData()">🔄 重新整理</button>
+      <button class="btn danger" onclick="backToLanding()">← 登出</button>
+    </div>
+    <div style="background:var(--sur2);border:1px solid var(--bdr);border-radius:8px;padding:10px;margin-top:10px">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:6px;font-family:monospace">// 部署網址（可複製/修改）</div>
+      <input id="admin-deploy-url" value="https://dufu45945-lab.github.io/Change/seat_assignment.html" style="width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:6px;color:var(--acc3);padding:7px 10px;font-size:12px;font-family:monospace;outline:none">
+    </div>
   </div>
+  <div class="card">
+    <h3>// 所有班級</h3>
+    <div id="admin-class-list"><p style="font-size:12px;color:var(--txt2)">載入中...</p></div>
+  </div>
+  <div class="card">
+    <h3>// 活動紀錄</h3>
+    <div class="log-list" id="activity-log"><p style="color:var(--txt2)">等待資料...</p></div>
+  </div>
+</div>
 </div>
 
 <script>
-// ══════════════════════════════════════════
-//  SUPABASE 設定
-// ══════════════════════════════════════════
-const SUPABASE_URL = 'https://bbycxnlpuvqlyuyauems.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJieWN4bmxwdXZxbHl1eWF1ZW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTc0OTgsImV4cCI6MjA5MjQzMzQ5OH0.lnsB8weZrMfN0zNuM-GdLQf_qr8pRTHorcVUtA2M7-A';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SURL='https://bbycxnlpuvqlyuyauems.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJieWN4bmxwdXZxbHl1eWF1ZW1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTc0OTgsImV4cCI6MjA5MjQzMzQ5OH0.lnsB8weZrMfN0zNuM-GdLQf_qr8pRTHorcVUtA2M7-A';
+const DEPLOY_URL='https://dufu45945-lab.github.io/Change/seat_assignment.html';
+const sb=supabase.createClient(SURL,SKEY);
 
-// ══════════════════════════════════════════
-//  STATE
-// ══════════════════════════════════════════
-let classCode = '';
-let teacherPass = '';
-let students = [];
-let resultGrid = Array.from({length:6},()=>Array(6).fill(null));
-let swapSel = null;
-let editTarget = null;
-let currentStudentName = '';
-let realtimeChannel = null;
-let collectStatus = 'waiting'; // 'waiting' | 'open' | 'closed'
-
-let seatRanges = [
+var classCode='',teacherPass='',devPass='',currentStudentPw='',isAdminMode=false;
+var students=[],resultGrid=Array.from({length:6},function(){return Array(6).fill(null);});
+var swapSel=null,currentStudentName='',currentStudentPw='',realtimeChannel=null;
+var collectStatus='waiting',deadline=null,countdownTimer=null;
+var conflictLog=[],activityLog=[];
+var selectedColdLevel=3,selectedWindow='';
+var typeMenuTarget=null;
+var cellTypes=Array.from({length:6},function(){return Array.from({length:6},function(){return{type:'normal',disabled:false};});});
+var seatRanges=[
   [{min:60,max:80},{min:80,max:100},{min:90,max:100},{min:90,max:100},{min:80,max:100},{min:60,max:80}],
   [{min:45,max:65},{min:65,max:85},{min:75,max:95},{min:75,max:95},{min:65,max:85},{min:45,max:65}],
   [{min:32,max:50},{min:48,max:68},{min:58,max:78},{min:58,max:78},{min:48,max:68},{min:32,max:50}],
   [{min:20,max:38},{min:34,max:52},{min:42,max:62},{min:42,max:62},{min:34,max:52},{min:20,max:38}],
   [{min:10,max:24},{min:20,max:36},{min:26,max:46},{min:26,max:46},{min:20,max:36},{min:10,max:24}],
-  [{min: 2,max:12},{min: 8,max:20},{min:12,max:28},{min:12,max:28},{min: 8,max:20},{min: 2,max:12}],
+  [{min:2,max:12},{min:8,max:20},{min:12,max:28},{min:12,max:28},{min:8,max:20},{min:2,max:12}]
 ];
 
-// ══════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════
-function mid(r,c){ return (seatRanges[r][c].min+seatRanges[r][c].max)/2; }
-function scoreColor(s){
-  const rv=Math.round(Math.min(255,s*1.6+79));
-  const gv=Math.round(Math.max(0,79-s*0.3));
-  const bv=Math.round(Math.max(0,247-s*1.9));
-  return `rgba(${rv},${gv},${bv},0.38)`;
+function midpt(r,c){return(seatRanges[r][c].min+seatRanges[r][c].max)/2;}
+function scoreColor(s){var rv=Math.round(Math.min(255,s*1.6+79)),gv=Math.round(Math.max(0,79-s*0.3)),bv=Math.round(Math.max(0,247-s*1.9));return 'rgba('+rv+','+gv+','+bv+',0.38)';}
+function setSyncDot(state,text){var d=document.getElementById('sync-dot');d.className='';if(state)d.classList.add(state);document.getElementById('sync-text').textContent=text;}
+function addLog(action,detail){var t=new Date().toLocaleTimeString('zh-TW',{hour12:false});activityLog.unshift({t:t,action:action,detail:detail||''});if(activityLog.length>100)activityLog.pop();}
+function switchTab(name){var names=['setup','formula','students','qr','status','result'];document.querySelectorAll('.tab').forEach(function(t,i){t.classList.toggle('active',names[i]===name);});document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});document.getElementById('tab-'+name).classList.add('active');}
+function hideAll(){['landing','dev-landing','teacher-view','student-view','admin-view'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});}
+function backToAdmin(){
+  hideAll();
+  document.getElementById('admin-view').style.display='block';
+  loadAdminData();
 }
-function showModal(id){ document.getElementById('overlay').style.display='block'; document.getElementById(id).style.display='block'; }
-function closeModal(){ document.getElementById('overlay').style.display='none'; document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); }
-function switchTab(name){
-  const names=['setup','formula','students','qr','status','result'];
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
+function backToLanding(){hideAll();document.getElementById('landing').style.display='flex';}
+
+// TITLE CLICK → DEV
+var titleClickCount=0,titleClickTimer=null;
+function handleTitleClick(){
+  titleClickCount++;
+  if(titleClickTimer)clearTimeout(titleClickTimer);
+  titleClickTimer=setTimeout(function(){titleClickCount=0;},1500);
+  if(titleClickCount>=3){titleClickCount=0;hideAll();document.getElementById('dev-landing').style.display='flex';}
 }
 
-// ══════════════════════════════════════════
-//  LANDING
-// ══════════════════════════════════════════
-let loginMode = '';
-function showLoginForm(mode){
-  loginMode = mode;
-  const box = document.getElementById('login-form-box');
-  const title = document.getElementById('login-form-title');
-  const inner = document.getElementById('login-form-inner');
+// URL CHECK
+window.addEventListener('DOMContentLoaded',function(){
+  var p=new URLSearchParams(location.search);
+  if(p.get('class')){showLoginForm('student');setTimeout(function(){var el=document.getElementById('lf-class');if(el)el.value=p.get('class');},100);}
+  pingSupabase();
+  // check supabase auth session (for password reset callback)
+  sb.auth.onAuthStateChange(function(event,session){
+    if(event==='PASSWORD_RECOVERY'){showPasswordRecoveryUI();}
+  });
+});
+
+function showPasswordRecoveryUI(){
+  hideAll();
+  var box=document.getElementById('login-form-box');
+  document.getElementById('login-form-title').textContent='// 設定新密碼';
+  document.getElementById('login-form-inner').innerHTML='<div class="field"><label>新密碼</label><input id="new-pw-input" type="password" placeholder="輸入新密碼"></div>';
   document.getElementById('login-form-err').style.display='none';
+  document.getElementById('forgot-link').style.display='none';
+  box.style.display='block';
+  document.getElementById('landing').style.display='flex';
+  document.querySelector('#login-form-box .btn.pri').onclick=function(){
+    var newPw=document.getElementById('new-pw-input').value;
+    if(!newPw)return;
+    sb.auth.updateUser({password:newPw}).then(function(res){
+      if(res.error){document.getElementById('login-form-err').textContent=res.error.message;document.getElementById('login-form-err').style.display='block';}
+      else{alert('✅ 密碼已更新！請重新登入。');hideLoginForm();}
+    });
+  };
+}
+
+// DEV LOGIN (Supabase Auth)
+async function submitDevLogin(){
+  var email=document.getElementById('dev-email').value.trim();
+  var pw=document.getElementById('dev-pw').value;
+  document.getElementById('dev-err').style.display='none';
+  if(!email||!pw){document.getElementById('dev-err').style.display='block';return;}
+  var res=await sb.auth.signInWithPassword({email:email,password:pw});
+  if(res.error){document.getElementById('dev-err').style.display='block';return;}
+  // check whitelist
+  var chk=await sb.from('admins').select('email').eq('email',email).single();
+  if(chk.error||!chk.data){document.getElementById('dev-err').style.display='block';await sb.auth.signOut();return;}
+  hideAll();document.getElementById('admin-view').style.display='block';
+  document.getElementById('admin-email-label').textContent=email;
+  loadAdminData();setSyncDot('synced','已連線');addLog('登入','管理員 '+email);
+}
+async function sendDevPasswordReset(){
+  var email=document.getElementById('dev-email').value.trim();
+  if(!email){alert('請先輸入 Email');return;}
+  var res=await sb.auth.resetPasswordForEmail(email,{redirectTo:DEPLOY_URL});
+  if(res.error){alert('發送失敗：'+res.error.message);return;}
+  document.getElementById('dev-reset-ok').style.display='block';
+}
+
+// ADMIN DATA
+async function loadAdminData(){
+  var cres=await sb.from('classes').select('id,created_at,config');
+  var sres=await sb.from('students').select('id,class_id');
+  var classes=cres.data||[];var allStudents=sres.data||[];
+  document.getElementById('admin-class-count').textContent=classes.length;
+  document.getElementById('admin-student-count').textContent=allStudents.length;
+  var list=document.getElementById('admin-class-list');
+  if(!classes.length){list.innerHTML='<p style="font-size:12px;color:var(--txt2)">目前沒有任何班級</p>';return;}
+  list.innerHTML='';
+  classes.forEach(function(cls){
+    var stuCount=allStudents.filter(function(s){return s.class_id===cls.id;}).length;
+    var created=cls.created_at?new Date(cls.created_at).toLocaleString('zh-TW',{hour12:false}).slice(0,16):'—';
+    var card=document.createElement('div');card.className='class-admin-card';
+    card.innerHTML=
+      '<div class="ca-info"><div class="ca-id">班級 '+cls.id+'</div><div class="ca-meta">學生 '+stuCount+' 人 · 建立於 '+created+'</div></div>'+
+      '<div style="display:flex;gap:6px">'+
+      '<button class="btn pri sm" onclick="enterClassAsAdmin(\''+cls.id+'\')">→ 進入</button>'+
+      '<button class="btn danger sm" onclick="deleteClass(\''+cls.id+'\')">🗑 刪除</button>'+
+      '</div>';
+    list.appendChild(card);
+  });
+  renderActivityLog();
+}
+async function enterClassAsAdmin(id){
+  classCode=id;
+  var res=await sb.rpc('admin_get_class_data',{p_id:id});
+  if(res.error||!res.data||!res.data.ok){alert('載入失敗：'+(res.data&&res.data.err||''));return;}
+  var d=res.data;var cfg=(d.class&&d.class.config)||{};
+  // 套用設定
+  if(cfg.seatRanges)seatRanges=JSON.parse(cfg.seatRanges);
+  if(cfg.cellTypes)cellTypes=JSON.parse(cfg.cellTypes);
+  if(cfg.collectStatus)collectStatus=cfg.collectStatus;
+  if(cfg.deadline)deadline=new Date(cfg.deadline);
+  ['w-nbr','w-row-w','w-cold','w-window','w-h','w-m','w-r'].forEach(function(el_id,i){var el=document.getElementById(el_id);var v=[cfg.wNbr,cfg.wRow,cfg.wCold,cfg.wWindow,cfg.wH,cfg.wM,cfg.wR][i];if(el&&v!=null)el.value=v;});
+  ['perm-height','perm-myopia','perm-rank'].forEach(function(el_id,i){var el=document.getElementById(el_id);if(el)el.checked=[cfg.permHeight,cfg.permMyopia,cfg.permRank][i]||false;});
+  students=(d.students||[]).map(function(s){return{_id:s.id,name:s.name||'',height:s.height||'',myopia:s.myopia||'',rank:s.rank||'',wishNbr:s.wish_nbr||'',wishRow:s.wish_row||'',coldLevel:s.cold_level||3,wishWindow:s.wish_window||'',submitted:s.submitted||false,studentPw:'',stuSecQ:s.stu_sec_q||'',stuSecQCustom:s.stu_sec_q_custom||'',updatedAt:s.updated_at||''};});
+  hideAll();
+  document.getElementById('teacher-view').style.display='block';
+  document.getElementById('class-label').textContent='班級：'+classCode+' （管理員模式） <button class="btn sm" onclick="backToAdmin()" style="margin-left:8px">← 返回管理面板</button>';
+  updateFormula();renderStudentTable();renderSeatMap();startStatusListener();
+  isAdminMode=true;
+  setSyncDot('synced','管理員已連線');addLog('管理員進入','班級 '+classCode);
+}
+async function deleteClass(id){
+  if(!confirm('確定刪除班級「'+id+'」及其所有學生資料？此操作無法復原。'))return;
+  var res=await sb.rpc('admin_delete_class',{p_id:id});
+  if(res.error||!res.data||!res.data.ok){alert('刪除失敗：'+(res.data&&res.data.err||'請確認超管身份'));return;}
+  addLog('刪除班級',id);loadAdminData();
+}
+
+// FORGOT PASSWORD (teacher/student)
+var QLABELS={q1:'我的班級有幾位學生？',q2:'我任教的科目是什麼？',q3:'我的班級代碼數字加總是多少？',q4:'我教書幾年了（整數）？',q5:'我最喜歡的顏色是什麼？',q6:'我的學校名稱是什麼？',custom:'（自訂問題）'};
+var STU_QLABELS={q1:'我最喜歡的科目是什麼？',q2:'我的生日是幾月幾號？',q3:'我最喜歡的顏色是什麼？',q4:'我的座號是幾號？',q5:'我最喜歡的食物是什麼？',custom:'（自訂問題）'};
+function onSecQChange(){
+  var sq=document.getElementById('cfg-sq');var wrap=document.getElementById('cfg-sq-custom-wrap');
+  if(sq&&wrap)wrap.style.display=sq.value==='custom'?'block':'none';
+  saveCfg();
+}
+function onStuSecQChange(){
+  var sq=document.getElementById('stu-sq');var wrap=document.getElementById('stu-sq-custom-wrap');
+  if(sq&&wrap)wrap.style.display=sq.value==='custom'?'block':'none';
+}
+async function loadForgotQuestion(){
+  var cls=document.getElementById('fp-class');if(!cls||cls.value.trim().length<1)return;
+  var wrap=document.getElementById('fp-q-wrap');var qlabel=document.getElementById('fp-q-label');
+  if(!wrap||!qlabel)return;
+  var res=await sb.from('classes').select('config').eq('id',cls.value.trim()).single();
+  if(res.error||!res.data){wrap.style.display='none';return;}
+  var cfg=res.data.config||{};
+  if(cfg.secQ){
+    var qText=cfg.secQ==='custom'?(cfg.secQCustom||'自訂問題'):(QLABELS[cfg.secQ]||cfg.secQ);
+    qlabel.textContent=qText;wrap.style.display='block';
+  } else{qlabel.textContent='此班級未設定安全問題';wrap.style.display='block';}
+}
+
+var forgotMode='';
+async function loadStuForgotQuestion(){
+  var clsEl=document.getElementById('fp-class'),nameEl=document.getElementById('fp-name');
+  if(!clsEl||!nameEl||!clsEl.value.trim()||!nameEl.value.trim())return;
+  var wrap=document.getElementById('fp-q-wrap'),qlabel=document.getElementById('fp-q-label');
+  if(!wrap||!qlabel)return;
+  var res=await sb.from('students').select('stu_sec_q,stu_sec_q_custom').eq('class_id',clsEl.value.trim()).eq('name',nameEl.value.trim()).single();
+  if(res.error||!res.data){wrap.style.display='none';return;}
+  var sq=res.data.stu_sec_q,sqc=res.data.stu_sec_q_custom;
+  var qText=sq==='custom'?(sqc||'自訂問題'):(STU_QLABELS[sq]||sq||'未設定安全問題');
+  qlabel.textContent=qText;wrap.style.display='block';
+}
+function showForgotModal(){
+  forgotMode=loginMode;
+  document.getElementById('forgot-err').style.display='none';
+  document.getElementById('forgot-ok').style.display='none';
+  var inner=document.getElementById('forgot-inner');
+  if(forgotMode==='teacher'){
+    inner.innerHTML='<p style="font-size:12px;color:var(--txt2);margin-bottom:10px">回答你設定的安全問題以重設密碼。</p>'+
+      '<div class="field"><label>班級代碼</label><input id="fp-class" placeholder="301" oninput="loadForgotQuestion()"></div>'+
+      '<div id="fp-q-wrap" style="display:none">'+
+        '<div class="field"><label id="fp-q-label" style="color:var(--acc2);font-size:12px">載入問題中...</label>'+
+        '<input id="fp-ans" placeholder="輸入你的答案（不區分大小寫）"></div>'+
+        '<div class="field"><label>新老師密碼</label><input id="fp-new" type="password"></div>'+
+      '</div>';
+  } else {
+    inner.innerHTML='<p style="font-size:12px;color:var(--txt2);margin-bottom:10px">回答你設定的安全問題以重設密碼。</p>'+
+      '<div class="field"><label>班級代碼</label><input id="fp-class" placeholder="301"></div>'+
+      '<div class="field"><label>你的姓名</label><input id="fp-name" placeholder="姓名" oninput="loadStuForgotQuestion()"></div>'+
+      '<div id="fp-q-wrap" style="display:none">'+
+        '<div class="field"><label id="fp-q-label" style="color:var(--acc2);font-size:12px">載入問題中...</label>'+
+        '<input id="fp-ans" placeholder="輸入你的答案（不區分大小寫）"></div>'+
+        '<div class="field"><label>新密碼</label><input id="fp-new" type="password"></div>'+
+      '</div>';
+  }
+  document.getElementById('forgot-overlay').style.display='block';
+  document.getElementById('forgot-modal').style.display='block';
+}
+function closeForgotModal(){document.getElementById('forgot-overlay').style.display='none';document.getElementById('forgot-modal').style.display='none';}
+async function submitForgot(){
+  document.getElementById('forgot-err').style.display='none';document.getElementById('forgot-ok').style.display='none';
+  var cls=document.getElementById('fp-class').value.trim(),newPw=document.getElementById('fp-new').value;
+  if(!cls||!newPw){document.getElementById('forgot-err').style.display='block';return;}
+  if(forgotMode==='teacher'){
+    var answerIn=document.getElementById('fp-ans').value.trim();
+    var res=await sb.rpc('reset_teacher_pass',{p_id:cls,p_answer:answerIn,p_new_pass:newPw});
+    if(res.error||!res.data||!res.data.ok){document.getElementById('forgot-err').style.display='block';return;}
+  } else {
+    var name=document.getElementById('fp-name').value.trim();
+    var answerIn=document.getElementById('fp-ans').value.trim();
+    var sres=await sb.rpc('reset_student_pass',{p_class_id:cls,p_name:name,p_answer:answerIn,p_new_pass:newPw});
+    if(sres.error||!sres.data||!sres.data.ok){document.getElementById('forgot-err').style.display='block';return;}
+  }
+  document.getElementById('forgot-ok').style.display='block';addLog('重設密碼',forgotMode);
+}
+
+// LOGIN
+var loginMode='';
+function showLoginForm(mode){
+  loginMode=mode;
+  document.getElementById('login-form-err').style.display='none';
+  var title=document.getElementById('login-form-title');
+  var inner=document.getElementById('login-form-inner');
   if(mode==='teacher'){
     title.textContent='// 老師登入';
-    inner.innerHTML=
-      `<div class="field"><label>班級代碼</label><input id="lf-class" placeholder="例：301"></div>`+
-      `<div class="field"><label>密碼</label><input id="lf-pass" type="password" placeholder="密碼"></div>`;
+    inner.innerHTML='<div class="field"><label>班級代碼</label><input id="lf-class" placeholder="例：301"></div><div class="field"><label>密碼</label><input id="lf-pass" type="password"></div>';
+    document.getElementById('forgot-link').style.display='block';document.getElementById('forgot-link').textContent='忘記老師密碼？';
   } else {
     title.textContent='// 學生入口';
-    inner.innerHTML=
-      `<div class="field"><label>班級代碼</label><input id="lf-class" placeholder="例：301"></div>`+
-      `<div class="field"><label>你的姓名</label><input id="lf-name" placeholder="姓名"></div>`;
+    inner.innerHTML='<div class="field"><label>班級代碼</label><input id="lf-class" placeholder="例：301"></div><div class="field"><label>姓名</label><input id="lf-name" placeholder="你的姓名"></div><div class="field"><label>密碼</label><input id="lf-pw" type="password"></div>';
+    document.getElementById('forgot-link').style.display='block';document.getElementById('forgot-link').textContent='忘記密碼？';
   }
-  box.style.display='block';
+  document.getElementById('login-form-box').style.display='block';
 }
-function hideLoginForm(){
-  document.getElementById('login-form-box').style.display='none';
-}
+function hideLoginForm(){document.getElementById('login-form-box').style.display='none';document.getElementById('forgot-link').style.display='none';}
 async function submitLoginForm(){
-  document.getElementById('login-form-err').style.display='none';
+  document.getElementById('login-form-err').style.display='none';setSyncDot('','連線中...');
   if(loginMode==='teacher'){
-    const cls=document.getElementById('lf-class').value.trim();
-    const pass=document.getElementById('lf-pass').value;
-    if(!cls||!pass){ document.getElementById('login-form-err').style.display='block'; return; }
-    const {data,error}=await sb.from('classes').select('pass').eq('id',cls).single();
-    if(error&&error.code==='PGRST116'){
-      if(!confirm(`班級「${cls}」不存在，要建立新班級嗎？`)) return;
-      const {error:e2}=await sb.from('classes').insert({id:cls,pass,config:{}});
-      if(e2){ alert('建立失敗：'+e2.message); return; }
-    } else if(error||!data||data.pass!==pass){
-      document.getElementById('login-form-err').style.display='block'; return;
+    var cls=document.getElementById('lf-class').value.trim(),pass=document.getElementById('lf-pass').value;
+    if(!cls||!pass){document.getElementById('login-form-err').style.display='block';return;}
+    var chk=await sb.rpc('verify_teacher',{p_id:cls,p_pass:pass});
+    if(chk.error||chk.data===false){
+      // 班級不存在才嘗試建立
+      var exist=await sb.from('classes').select('id').eq('id',cls).single();
+      if(exist.error&&exist.error.code==='PGRST116'){
+        if(!confirm('班級「'+cls+'」不存在，要建立新班級嗎？'))return;
+        var cr=await sb.rpc('create_class',{p_id:cls,p_pass:pass,p_config:{}});
+        if(cr.error||!cr.data||!cr.data.ok){document.getElementById('login-form-err').style.display='block';return;}
+      } else {
+        document.getElementById('login-form-err').style.display='block';setSyncDot('error','錯誤');return;
+      }
     }
-    classCode=cls; teacherPass=pass;
-    hideLoginForm();
-    await loadFromSupabase();
-    enterTeacherMode();
+    classCode=cls;teacherPass=pass;hideLoginForm();await loadFromSupabase();enterTeacherMode();
   } else {
-    const cls=document.getElementById('lf-class').value.trim();
-    const name=document.getElementById('lf-name').value.trim();
-    if(!cls||!name){ document.getElementById('login-form-err').style.display='block'; return; }
-    const {data,error}=await sb.from('students').select('name').eq('class_id',cls).eq('name',name).single();
-    if(error||!data){ document.getElementById('login-form-err').style.display='block'; return; }
-    hideLoginForm();
-    enterStudentMode(cls,name);
+    var cls2=document.getElementById('lf-class').value.trim(),name=document.getElementById('lf-name').value.trim(),pw=document.getElementById('lf-pw').value;
+    if(!cls2||!name||!pw){document.getElementById('login-form-err').style.display='block';return;}
+    var res2=await sb.rpc('verify_student',{p_class_id:cls2,p_name:name,p_pass:pw});
+    if(res2.error||res2.data===false){document.getElementById('login-form-err').style.display='block';setSyncDot('error','錯誤');return;}
+    currentStudentPw=pw;hideLoginForm();enterStudentMode(cls2,name);
   }
 }
-function showTeacherLogin(){ showLoginForm('teacher'); }
-function showStudentEntry(){ showLoginForm('student'); }
 
-async function doTeacherLogin(){
-  const cls=document.getElementById('login-class').value.trim();
-  const pass=document.getElementById('login-pass').value;
-  if(!cls||!pass){ document.getElementById('login-err').style.display='block'; return; }
-  const {data,error}=await sb.from('classes').select('pass').eq('id',cls).single();
-  if(error&&error.code==='PGRST116'){
-    // 班級不存在 → 第一次建立
-    if(!confirm(`班級「${cls}」不存在，要建立新班級嗎？`)) return;
-    const {error:e2}=await sb.from('classes').insert({id:cls,pass,config:{}});
-    if(e2){ alert('建立失敗：'+e2.message); return; }
-  } else if(error||!data||data.pass!==pass){
-    document.getElementById('login-err').style.display='block'; return;
-  }
-  classCode=cls; teacherPass=pass;
-  closeModal();
-  await loadFromSupabase();
-  enterTeacherMode();
-}
-
-async function doStudentEntry(){
-  const cls=document.getElementById('stu-class-input').value.trim();
-  const name=document.getElementById('stu-name-input').value.trim();
-  if(!cls||!name){ document.getElementById('stu-err').style.display='block'; return; }
-  const {data,error}=await sb.from('students').select('name').eq('class_id',cls).eq('name',name).single();
-  if(error||!data){ document.getElementById('stu-err').style.display='block'; return; }
-  closeModal();
-  enterStudentMode(cls,name);
-}
-
-// ══════════════════════════════════════════
-//  TEACHER MODE
-// ══════════════════════════════════════════
+// TEACHER
 function enterTeacherMode(){
-  document.getElementById('landing').style.display='none';
-  document.getElementById('teacher-view').style.display='block';
-  document.getElementById('class-label').textContent=`班級：${classCode}`;
-  updateFormula();
-  renderStudentTable();
-  renderSeatMap();
-  startStatusListener();
+  isAdminMode=false;
+  hideAll();document.getElementById('teacher-view').style.display='block';
+  document.getElementById('class-label').textContent='班級：'+classCode;
+  updateFormula();renderStudentTable();renderSeatMap();startStatusListener();
+  setSyncDot('synced','已連線');addLog('登入','老師登入 '+classCode);
 }
-
-function saveCfg(){
-  classCode=document.getElementById('cfg-class').value.trim()||classCode;
-  teacherPass=document.getElementById('cfg-pass').value||teacherPass;
-}
-
+function saveCfg(){var c=document.getElementById('cfg-class').value.trim();if(c)classCode=c;var p=document.getElementById('cfg-pass').value;if(p)teacherPass=p;}
 async function saveToSupabase(){
-  if(!classCode){ alert('請先填班級代碼'); return; }
-  const cfg={
-    pass: teacherPass||document.getElementById('cfg-pass').value,
-    url: document.getElementById('cfg-url').value.trim(),
-    permHeight: document.getElementById('perm-height').checked,
-    permMyopia: document.getElementById('perm-myopia').checked,
-    permRank:   document.getElementById('perm-rank').checked,
-    wNbr: +document.getElementById('w-nbr').value,
-    wRow: +document.getElementById('w-row-w').value,
-    wH: +document.getElementById('w-h').value,
-    wM: +document.getElementById('w-m').value,
-    wR: +document.getElementById('w-r').value,
-    seatRanges: JSON.stringify(seatRanges),
-    collectStatus,
-  };
-  // upsert class
-  await sb.from('classes').upsert({id:classCode, pass:cfg.pass, config:cfg});
-  // delete old students and re-insert
-  await sb.from('students').delete().eq('class_id',classCode);
-  if(students.length){
-    const rows=students.map(s=>({
-      class_id:classCode, name:s.name||'', height:s.height||null,
-      myopia:s.myopia||null, rank:s.rank||null,
-      wish_nbr:s.wishNbr||'', wish_row:s.wishRow||'', submitted:s.submitted||false
-    }));
-    await sb.from('students').insert(rows);
+  if(!classCode){alert('請先填班級代碼');return;}
+  setSyncDot('','儲存中...');
+  var deployUrl=document.getElementById('admin-deploy-url')?document.getElementById('admin-deploy-url').value:DEPLOY_URL;
+  var sqEl=document.getElementById('cfg-sq'),saEl=document.getElementById('cfg-sa'),sqcEl=document.getElementById('cfg-sq-custom');
+  var cfg={pass:teacherPass,url:deployUrl,
+    secQ:sqEl?sqEl.value:'',secA:saEl?(saEl.value.trim().toLowerCase()):'',
+    secQCustom:sqcEl?sqcEl.value.trim():'',
+    permHeight:document.getElementById('perm-height').checked,permMyopia:document.getElementById('perm-myopia').checked,permRank:document.getElementById('perm-rank').checked,
+    wNbr:+document.getElementById('w-nbr').value,wRow:+document.getElementById('w-row-w').value,wCold:+document.getElementById('w-cold').value,wWindow:+document.getElementById('w-window').value,
+    wH:+document.getElementById('w-h').value,wM:+document.getElementById('w-m').value,wR:+document.getElementById('w-r').value,
+    seatRanges:JSON.stringify(seatRanges),cellTypes:JSON.stringify(cellTypes),collectStatus:collectStatus,deadline:deadline?deadline.toISOString():null};
+  var stuArr=students.map(function(s){return{name:s.name||'',height:s.height||null,myopia:s.myopia||null,rank:s.rank||null,wishNbr:s.wishNbr||'',wishRow:s.wishRow||'',coldLevel:s.coldLevel||3,wishWindow:s.wishWindow||'',submitted:s.submitted||false,studentPw:s.studentPw||'',stuSecQ:s.stuSecQ||'',stuSecQCustom:s.stuSecQCustom||''};});
+  if(isAdminMode){
+    // 管理員模式：用 Auth 驗證，不需老師密碼
+    var cfgRes=await sb.rpc('admin_update_class_config',{p_id:classCode,p_config:cfg});
+    if(cfgRes.error||!cfgRes.data||!cfgRes.data.ok){alert('設定儲存失敗：'+(cfgRes.data&&cfgRes.data.err||cfgRes.error&&cfgRes.error.message||'unknown'));return;}
+    var stuRes=await sb.rpc('admin_upsert_students',{p_class_id:classCode,p_students:stuArr});
+    if(stuRes.error||!stuRes.data||!stuRes.data.ok){alert('學生資料儲存失敗：'+(stuRes.data&&stuRes.data.err||stuRes.error&&stuRes.error.message||'unknown'));return;}
+  } else {
+    // 老師模式：需老師密碼驗證
+    var cfgRes=await sb.rpc('update_class_config',{p_id:classCode,p_pass:teacherPass,p_config:cfg});
+    if(cfgRes.error||!cfgRes.data||!cfgRes.data.ok){alert('設定儲存失敗：'+(cfgRes.data&&cfgRes.data.err||cfgRes.error&&cfgRes.error.message||'unknown'));return;}
+    var stuRes=await sb.rpc('upsert_students',{p_class_id:classCode,p_pass:teacherPass,p_students:stuArr});
+    if(stuRes.error||!stuRes.data||!stuRes.data.ok){alert('學生資料儲存失敗：'+(stuRes.data&&stuRes.data.err||stuRes.error&&stuRes.error.message||'unknown'));return;}
   }
-  alert('✅ 已儲存到 Supabase！');
+  setSyncDot('synced','已儲存');addLog('儲存','資料同步');alert('✅ 已儲存！');
 }
-
 async function loadFromSupabase(){
-  const {data:cls}=await sb.from('classes').select('*').eq('id',classCode).single();
-  if(!cls) return;
-  const cfg=cls.config||{};
-  if(cfg.url) document.getElementById('cfg-url').value=cfg.url;
-  document.getElementById('cfg-pass').value=cls.pass||'';
-  document.getElementById('cfg-class').value=classCode;
-  document.getElementById('perm-height').checked=cfg.permHeight||false;
-  document.getElementById('perm-myopia').checked=cfg.permMyopia||false;
-  document.getElementById('perm-rank').checked=cfg.permRank||false;
-  if(cfg.wNbr!=null) document.getElementById('w-nbr').value=cfg.wNbr;
-  if(cfg.wRow!=null) document.getElementById('w-row-w').value=cfg.wRow;
-  if(cfg.wH!=null) document.getElementById('w-h').value=cfg.wH;
-  if(cfg.wM!=null) document.getElementById('w-m').value=cfg.wM;
-  if(cfg.wR!=null) document.getElementById('w-r').value=cfg.wR;
-  if(cfg.seatRanges) seatRanges=JSON.parse(cfg.seatRanges);
-  if(cfg.collectStatus) collectStatus=cfg.collectStatus;
-  const {data:stus}=await sb.from('students').select('*').eq('class_id',classCode).order('id');
-  if(stus){
-    students=stus.map(s=>({
-      _id:s.id, name:s.name||'', height:s.height||'', myopia:s.myopia||'',
-      rank:s.rank||'', wishNbr:s.wish_nbr||'', wishRow:s.wish_row||'', submitted:s.submitted||false
-    }));
-  }
+  var res=await sb.from('classes').select('id,config,created_at').eq('id',classCode).single();
+  if(!res.data)return;var cfg=res.data.config||{};
+  // 不從後端載入密碼（已 bcrypt 雜湊，無法顯示明文）
+  var cc=document.getElementById('cfg-class');if(cc)cc.value=classCode;
+  if(cfg.secQ){var sqEl=document.getElementById('cfg-sq');if(sqEl){sqEl.value=cfg.secQ;onSecQChange();}}
+  if(cfg.secA){var saEl=document.getElementById('cfg-sa');if(saEl)saEl.value=cfg.secA;}
+  if(cfg.secQCustom){var sqcEl=document.getElementById('cfg-sq-custom');if(sqcEl)sqcEl.value=cfg.secQCustom;}
+  ['perm-height','perm-myopia','perm-rank'].forEach(function(id,i){var el=document.getElementById(id);if(el)el.checked=[cfg.permHeight,cfg.permMyopia,cfg.permRank][i]||false;});
+  ['w-nbr','w-row-w','w-cold','w-window','w-h','w-m','w-r'].forEach(function(id,i){var el=document.getElementById(id);var v=[cfg.wNbr,cfg.wRow,cfg.wCold,cfg.wWindow,cfg.wH,cfg.wM,cfg.wR][i];if(el&&v!=null)el.value=v;});
+  if(cfg.seatRanges)seatRanges=JSON.parse(cfg.seatRanges);
+  if(cfg.cellTypes)cellTypes=JSON.parse(cfg.cellTypes);
+  if(cfg.collectStatus)collectStatus=cfg.collectStatus;
+  if(cfg.deadline)deadline=new Date(cfg.deadline);
+  var sres=await sb.from('students').select('id,name,height,myopia,rank,wish_nbr,wish_row,cold_level,wish_window,submitted,stu_sec_q,stu_sec_q_custom,updated_at').eq('class_id',classCode).order('id');
+  if(sres.data)students=sres.data.map(function(s){return{_id:s.id,name:s.name||'',height:s.height||'',myopia:s.myopia||'',rank:s.rank||'',wishNbr:s.wish_nbr||'',wishRow:s.wish_row||'',coldLevel:s.cold_level||3,wishWindow:s.wish_window||'',submitted:s.submitted||false,studentPw:'',updatedAt:s.updated_at||''};});
 }
-
 async function resetClass(){
-  if(!confirm('確定清除本班所有資料？')) return;
-  await sb.from('students').delete().eq('class_id',classCode);
-  await sb.from('classes').delete().eq('id',classCode);
-  students=[];
-  renderStudentTable();
-  alert('已清除');
-}
-
-// ══════════════════════════════════════════
-//  FORMULA
-// ══════════════════════════════════════════
-function getWeights(){
-  const wh=+document.getElementById('w-h').value;
-  const wm=+document.getElementById('w-m').value;
-  const wr=+document.getElementById('w-r').value;
-  const t=wh+wm+wr||1;
-  return {h:wh/t,m:wm/t,r:wr/t};
-}
-function updateFormula(){
-  const w=getWeights();
-  const ph=Math.round(w.h*100),pm=Math.round(w.m*100),pr=Math.round(w.r*100);
-  document.getElementById('wv-h').textContent=ph+'%';
-  document.getElementById('wv-m').textContent=pm+'%';
-  document.getElementById('wv-r').textContent=pr+'%';
-  document.getElementById('formula-display').innerHTML=
-    `<span style="color:#8b90a8">// 標準化後加權合計</span>\n`+
-    `需求分 = <span style="color:#4f8ef7">${ph}%</span>×norm(身高↑→低分)\n`+
-    `       + <span style="color:#f74f4f">${pm}%</span>×norm(近視↑→高分)\n`+
-    `       + <span style="color:#f7a44f">${pr}%</span>×norm(班排↑→高分)`;
-  renderSeatMap();
-  renderStudentTable();
-}
-function updateWishWeights(){
-  document.getElementById('wv-nbr').textContent=document.getElementById('w-nbr').value;
-  document.getElementById('wv-row-w').textContent=document.getElementById('w-row-w').value;
-}
-function setWishDefault(){
-  document.getElementById('w-nbr').value=60;
-  document.getElementById('w-row-w').value=40;
-  updateWishWeights();
-}
-
-// ══════════════════════════════════════════
-//  SEAT MAP
-// ══════════════════════════════════════════
-function renderSeatMap(){
-  const g=document.getElementById('seat-score-grid');
-  if(!g) return;
-  g.innerHTML='';
-  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
-    const rng=seatRanges[r][c], m=(rng.min+rng.max)/2;
-    const cell=document.createElement('div');
-    cell.className='seat-cell'; cell.style.background=scoreColor(m);
-    cell.innerHTML=`<span class="sc-range">${rng.min}～${rng.max}</span><span class="sc-lbl">R${r+1}C${c+1}</span><div class="sc-bar"><div class="sc-bar-inner" style="width:${m}%"></div></div>`;
-    cell.onclick=()=>openRangeEditor(r,c);
-    g.appendChild(cell);
+  if(!confirm('確定清除本班所有資料？'))return;
+  var res=await sb.rpc('admin_delete_class',{p_id:classCode});
+  if(res.error||!res.data||!res.data.ok){
+    // 若不是管理員，用老師密碼驗證後刪
+    if(!teacherPass){alert('請先登入');return;}
+    var v=await sb.rpc('verify_teacher',{p_id:classCode,p_pass:teacherPass});
+    if(v.error||v.data===false){alert('密碼驗證失敗');return;}
+    // 老師可以建立一個刪除自己班級的函式，這裡暫時提示需超管操作
+    alert('清除班級需要超管身份，請聯絡管理員。');return;
   }
+  students=[];renderStudentTable();alert('已清除');
 }
 
-// ══════════════════════════════════════════
-//  RANGE EDITOR
-// ══════════════════════════════════════════
-function openRangeEditor(r,c){
-  editTarget={r,c};
-  document.getElementById('re-title').textContent=`// R${r+1}C${c+1} 座位分數範圍`;
-  document.getElementById('re-min').value=seatRanges[r][c].min;
-  document.getElementById('re-max').value=seatRanges[r][c].max;
-  rePreview();
-  document.getElementById('re-overlay').style.display='block';
-  document.getElementById('re-editor').style.display='block';
+// FORMULA
+function getWeights(){var wh=+document.getElementById('w-h').value,wm=+document.getElementById('w-m').value,wr=+document.getElementById('w-r').value,t=wh+wm+wr||1;return{h:wh/t,m:wm/t,r:wr/t};}
+function updateFormula(){
+  var w=getWeights(),ph=Math.round(w.h*100),pm=Math.round(w.m*100),pr=Math.round(w.r*100);
+  ['wv-h','wv-m','wv-r'].forEach(function(id,i){document.getElementById(id).textContent=[ph,pm,pr][i]+'%';});
+  document.getElementById('formula-display').innerHTML='<span style="color:#8b90a8">// 標準化後加權</span>\n需求分 = <span style="color:#4f8ef7">'+ph+'%</span>×norm(身高↑→低分) + <span style="color:#f74f4f">'+pm+'%</span>×norm(近視↑→高分) + <span style="color:#f7a44f">'+pr+'%</span>×norm(班排↑→高分)';
+  renderSeatMap();renderStudentTable();
 }
-function rePreview(){
-  const mn=+document.getElementById('re-min').value, mx=+document.getElementById('re-max').value;
-  document.getElementById('re-preview').textContent=`範圍 ${mn}～${mx}　中點：${((mn+mx)/2).toFixed(1)}`;
-}
-function saveRangeEditor(){
-  let mn=Math.max(0,Math.min(100,+document.getElementById('re-min').value||0));
-  let mx=Math.max(0,Math.min(100,+document.getElementById('re-max').value||0));
-  if(mn>mx)[mn,mx]=[mx,mn];
-  seatRanges[editTarget.r][editTarget.c]={min:mn,max:mx};
-  closeRangeEditor(); renderSeatMap();
-}
-function closeRangeEditor(){
-  document.getElementById('re-overlay').style.display='none';
-  document.getElementById('re-editor').style.display='none';
-}
+function updateWishWeights(){['w-nbr','w-row-w','w-cold','w-window'].forEach(function(id){var vId='wv-'+id.slice(2);var el=document.getElementById(vId);if(el)el.textContent=document.getElementById(id).value;});}
+function setWishDefault(){document.getElementById('w-nbr').value=35;document.getElementById('w-row-w').value=30;document.getElementById('w-cold').value=20;document.getElementById('w-window').value=15;updateWishWeights();}
 
-// ══════════════════════════════════════════
-//  STUDENTS
-// ══════════════════════════════════════════
-function addStudent(data={}){
-  students.push({name:data.name||'',height:data.height||'',myopia:data.myopia||'',rank:data.rank||'',wishNbr:data.wishNbr||'',wishRow:data.wishRow||''});
-  renderStudentTable();
+// SEAT MAP
+var typeIcons={normal:'',ac:'❄️',window:'🪟'};
+function renderSeatMap(){
+  var g=document.getElementById('seat-score-grid');if(!g)return;g.innerHTML='';
+  for(var r=0;r<6;r++){for(var c=0;c<6;c++){(function(row,col){
+    var rng=seatRanges[row][col],m=(rng.min+rng.max)/2,ct=cellTypes[row][col];
+    var cell=document.createElement('div');
+    cell.className='seat-cell'+(ct.disabled?' disabled-cell':'');
+    cell.style.background=ct.disabled?'rgba(46,51,80,.25)':scoreColor(m);
+    cell.innerHTML='<span class="seat-type-badge">'+typeIcons[ct.type]+'</span>'+
+      '<span class="sc-lbl">R'+(row+1)+'C'+(col+1)+'</span>'+
+      '<div class="dual-slider-wrap">'+
+        '<div class="slider-row"><span style="font-size:9px;color:rgba(255,255,255,.5)">▼</span>'+
+        '<input type="range" min="0" max="100" value="'+rng.min+'" style="accent-color:#f74f4f" '+
+          'oninput="seatRanges['+row+']['+col+'].min=Math.min(+this.value,seatRanges['+row+']['+col+'].max-1);renderSeatMap()" '+
+          'onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">'+
+        '<span class="slider-val" style="color:#f74f4f">'+rng.min+'</span></div>'+
+        '<div class="slider-row"><span style="font-size:9px;color:rgba(255,255,255,.5)">▲</span>'+
+        '<input type="range" min="0" max="100" value="'+rng.max+'" style="accent-color:#4ff7a4" '+
+          'oninput="seatRanges['+row+']['+col+'].max=Math.max(+this.value,seatRanges['+row+']['+col+'].min+1);renderSeatMap()" '+
+          'onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">'+
+        '<span class="slider-val" style="color:#4ff7a4">'+rng.max+'</span></div>'+
+      '</div>';
+    cell.addEventListener('click',function(e){if(e.target.tagName==='INPUT')return;openTypeMenu(row,col,e);});
+    g.appendChild(cell);
+  })(r,c);}};
 }
-function clearStudents(){ if(confirm('確定清除？')){students=[];renderStudentTable();} }
+function openTypeMenu(r,c,e){
+  typeMenuTarget={r:r,c:c};var menu=document.getElementById('type-menu');
+  var ct=cellTypes[r][c];
+  menu.querySelectorAll('.type-menu-item').forEach(function(el){el.classList.remove('active');});
+  var items=menu.querySelectorAll('.type-menu-item');
+  ['normal','ac','window'].forEach(function(t,i){items[i].classList.toggle('active',ct.type===t);});
+  document.getElementById('type-menu-disable').textContent=ct.disabled?'✅ 啟用此格':'🚫 停用此格';
+  var x=Math.min(e.clientX,window.innerWidth-170),y=Math.min(e.clientY,window.innerHeight-180);
+  menu.style.left=x+'px';menu.style.top=y+'px';menu.style.display='block';
+  setTimeout(function(){document.addEventListener('click',closeTypeMenu,{once:true});},10);
+}
+function closeTypeMenu(){document.getElementById('type-menu').style.display='none';}
+function setCellType(type){if(!typeMenuTarget)return;cellTypes[typeMenuTarget.r][typeMenuTarget.c].type=type;closeTypeMenu();renderSeatMap();}
+function toggleCellDisabled(){if(!typeMenuTarget)return;var ct=cellTypes[typeMenuTarget.r][typeMenuTarget.c];ct.disabled=!ct.disabled;closeTypeMenu();renderSeatMap();}
 
+// STUDENTS
+function addStudent(){students.push({name:'',height:'',myopia:'',rank:'',wishNbr:'',wishRow:'',coldLevel:3,wishWindow:'',submitted:false,studentPw:''});renderStudentTable();}
+function clearStudents(){if(confirm('確定清除？')){students=[];renderStudentTable();}}
 function renderStudentTable(){
-  const scores=calcAllScores();
-  const tbody=document.getElementById('student-tbody');
-  if(!tbody) return;
-  tbody.innerHTML='';
-  students.forEach((s,i)=>{
-    const sc=scores[i];
-    const tr=document.createElement('tr');
+  var scores=calcAllScores(),tbody=document.getElementById('student-tbody');if(!tbody)return;tbody.innerHTML='';
+  students.forEach(function(s,i){
+    var sc=scores[i],tr=document.createElement('tr');
+    var nbrOpts='<option value=""'+((!s.wishNbr)?'selected':'')+'>不指定</option>';
+    students.forEach(function(t,j){if(j!==i&&t.name)nbrOpts+='<option value="'+t.name+'"'+(s.wishNbr===t.name?' selected':'')+'>'+t.name+'</option>';});
     tr.innerHTML=
-      `<td style="color:var(--txt2);width:24px">${i+1}</td>`+
-      `<td><input value="${s.name}" placeholder="姓名" oninput="students[${i}].name=this.value;renderStudentTable()"/></td>`+
-      `<td><input type="number" value="${s.height}" placeholder="165" oninput="students[${i}].height=this.value;renderStudentTable()"/></td>`+
-      `<td><input type="number" value="${s.myopia}" placeholder="200" oninput="students[${i}].myopia=this.value;renderStudentTable()"/></td>`+
-      `<td><input type="number" value="${s.rank}" placeholder="15" oninput="students[${i}].rank=this.value;renderStudentTable()"/></td>`+
-      `<td><input value="${s.wishNbr||''}" placeholder="同學姓名" oninput="students[${i}].wishNbr=this.value"/></td>`+
-      `<td><select onchange="students[${i}].wishRow=this.value"><option value="" ${!s.wishRow?'selected':''}>不指定</option><option value="front" ${s.wishRow==='front'?'selected':''}>前排</option><option value="mid" ${s.wishRow==='mid'?'selected':''}>中排</option><option value="back" ${s.wishRow==='back'?'selected':''}>後排</option></select></td>`+
-      `<td style="text-align:center">${sc!==null?`<span class="badge" style="background:${scoreColor(sc)};color:#fff">${sc.toFixed(1)}</span>`:'<span style="color:var(--txt2)">—</span>'}</td>`+
-      `<td><button class="btn sm" onclick="students.splice(${i},1);renderStudentTable()">✕</button></td>`;
+      '<td style="color:var(--txt2);width:22px">'+(i+1)+'</td>'+
+      '<td><input value="'+(s.name||'')+'" placeholder="姓名" oninput="students['+i+'].name=this.value;renderStudentTable()"/></td>'+
+      '<td><input type="number" value="'+(s.height||'')+'" placeholder="165" oninput="students['+i+'].height=this.value;renderStudentTable()"/></td>'+
+      '<td><input type="number" value="'+(s.myopia||'')+'" placeholder="200" oninput="students['+i+'].myopia=this.value;renderStudentTable()"/></td>'+
+      '<td><input type="number" value="'+(s.rank||'')+'" placeholder="15" oninput="students['+i+'].rank=this.value;renderStudentTable()"/></td>'+
+      '<td><select onchange="students['+i+'].wishNbr=this.value">'+nbrOpts+'</select></td>'+
+      '<td><select onchange="students['+i+'].wishRow=this.value"><option value=""'+((!s.wishRow)?'selected':'')+'>不指定</option><option value="front"'+(s.wishRow==='front'?' selected':'')+'>前排</option><option value="mid"'+(s.wishRow==='mid'?' selected':'')+'>中排</option><option value="back"'+(s.wishRow==='back'?' selected':'')+'>後排</option></select></td>'+
+      '<td><select onchange="students['+i+'].coldLevel=+this.value" style="width:58px"><option value="1"'+(s.coldLevel===1?' selected':'')+'>🥶1</option><option value="2"'+(s.coldLevel===2?' selected':'')+'>😰2</option><option value="3"'+(s.coldLevel===3?' selected':'')+'>😐3</option><option value="4"'+(s.coldLevel===4?' selected':'')+'>😊4</option><option value="5"'+(s.coldLevel===5?' selected':'')+'>🔥5</option></select></td>'+
+      '<td><select onchange="students['+i+'].wishWindow=this.value" style="width:60px"><option value=""'+((!s.wishWindow)?'selected':'')+'>隨機</option><option value="yes"'+(s.wishWindow==='yes'?' selected':'')+'>想坐</option><option value="no"'+(s.wishWindow==='no'?' selected':'')+'>不想</option></select></td>'+
+      '<td><input value="'+(s.studentPw||'')+'" placeholder="密碼" style="width:72px" oninput="students['+i+'].studentPw=this.value"/></td>'+
+      '<td style="text-align:center">'+(sc!==null?'<span class="badge" style="background:'+scoreColor(sc)+';color:#fff">'+sc.toFixed(1)+'</span>':'<span style="color:var(--txt2)">—</span>')+'</td>'+
+      '<td><button class="btn sm" onclick="students.splice('+i+',1);renderStudentTable()">✕</button></td>';
     tbody.appendChild(tr);
   });
 }
-
 function calcAllScores(){
-  const vals=students.map(s=>({h:+s.height,m:+s.myopia,r:+s.rank}));
-  const hs=vals.map(v=>v.h).filter(x=>x>0&&!isNaN(x));
-  const ms=vals.map(v=>v.m).filter(x=>x>=0&&!isNaN(x));
-  const rs=vals.map(v=>v.r).filter(x=>x>0&&!isNaN(x));
-  if(!hs.length) return students.map(()=>null);
-  const minH=Math.min(...hs),maxH=Math.max(...hs);
-  const minM=Math.min(...ms),maxM=Math.max(...ms);
-  const minR=Math.min(...rs),maxR=Math.max(...rs);
-  const w=getWeights();
-  return vals.map(v=>{
-    if(!v.h||isNaN(v.h)||isNaN(v.m)||!v.r||isNaN(v.r)) return null;
-    const nh=maxH===minH?50:(maxH-v.h)/(maxH-minH)*100;
-    const nm=maxM===minM?50:(v.m-minM)/(maxM-minM)*100;
-    const nr=maxR===minR?50:(v.r-minR)/(maxR-minR)*100;
+  var vals=students.map(function(s){return{h:+s.height,m:+s.myopia,r:+s.rank};});
+  var hs=vals.map(function(v){return v.h;}).filter(function(x){return x>0&&!isNaN(x);});
+  var ms=vals.map(function(v){return v.m;}).filter(function(x){return x>=0&&!isNaN(x);});
+  var rs=vals.map(function(v){return v.r;}).filter(function(x){return x>0&&!isNaN(x);});
+  if(!hs.length)return students.map(function(){return null;});
+  var minH=Math.min.apply(null,hs),maxH=Math.max.apply(null,hs),minM=Math.min.apply(null,ms),maxM=Math.max.apply(null,ms),minR=Math.min.apply(null,rs),maxR=Math.max.apply(null,rs);
+  var w=getWeights();
+  return vals.map(function(v){
+    if(!v.h||isNaN(v.h)||isNaN(v.m)||!v.r||isNaN(v.r))return null;
+    var nh=maxH===minH?50:(maxH-v.h)/(maxH-minH)*100,nm=maxM===minM?50:(v.m-minM)/(maxM-minM)*100,nr=maxR===minR?50:(v.r-minR)/(maxR-minR)*100;
     return w.h*nh+w.m*nm+w.r*nr;
   });
 }
 
-// ══════════════════════════════════════════
-//  QR CODES
-// ══════════════════════════════════════════
-function generateQRs(){
-  const baseUrl=document.getElementById('cfg-url').value.trim()||location.origin+location.pathname;
-  const cls=document.getElementById('cfg-class').value.trim()||classCode;
-  const panel=document.getElementById('qr-panel');
-  panel.innerHTML='';
-  if(!students.length){ panel.innerHTML='<p style="color:var(--txt2)">請先新增學生</p>'; return; }
-  students.forEach(s=>{
-    if(!s.name) return;
-    const url=`${baseUrl}?mode=student&class=${encodeURIComponent(cls)}&name=${encodeURIComponent(s.name)}`;
-    const card=document.createElement('div');
-    card.className='qr-card';
-    const qbox=document.createElement('div');
-    qbox.className='qr-box';
-    card.innerHTML=`<div class="qname">${s.name}</div>`;
-    card.appendChild(qbox);
-    const linkEl=document.createElement('div');
-    linkEl.className='qlink';
-    linkEl.textContent=url;
-    card.appendChild(linkEl);
-    panel.appendChild(card);
-    new QRCode(qbox,{text:url,width:110,height:110,colorDark:'#e8eaf0',colorLight:'#22263a'});
-  });
+// QR
+function generateClassQR(){
+  var baseUrl=DEPLOY_URL;var cls=document.getElementById('cfg-class').value.trim()||classCode;
+  var url=baseUrl+'?class='+encodeURIComponent(cls);
+  var panel=document.getElementById('qr-panel');panel.innerHTML='';
+  var box=document.createElement('div');box.className='qr-box-large';
+  var qbox=document.createElement('div');qbox.style.cssText='display:flex;justify-content:center;margin-bottom:10px';
+  box.innerHTML='<div style="font-size:14px;font-weight:700;margin-bottom:8px">班級 '+cls+' — 學生掃碼入口</div>';
+  box.appendChild(qbox);
+  var linkEl=document.createElement('div');linkEl.style.cssText='font-size:10px;color:var(--txt2);word-break:break-all;margin-top:6px';linkEl.textContent=url;
+  box.appendChild(linkEl);panel.appendChild(box);
+  new QRCode(qbox,{text:url,width:160,height:160,colorDark:'#e8eaf0',colorLight:'#22263a'});
 }
 
-// ══════════════════════════════════════════
-//  STATUS LISTENER (即時)
-// ══════════════════════════════════════════
+// DEADLINE
+function setDeadline(){var val=document.getElementById('deadline-input').value;if(!val){deadline=null;stopCountdown();return;}deadline=new Date(val);startCountdown();saveDeadlineToSupa();}
+async function saveDeadlineToSupa(){
+  if(!classCode)return;
+  if(isAdminMode){
+    await sb.rpc('admin_set_collect_status',{p_id:classCode,p_status:collectStatus,p_deadline:deadline?deadline.toISOString():null});
+  } else {
+    await sb.rpc('set_collect_status',{p_id:classCode,p_pass:teacherPass,p_status:collectStatus,p_deadline:deadline?deadline.toISOString():null});
+  }
+}
+function startCountdown(){
+  stopCountdown();if(!deadline)return;
+  var el=document.getElementById('teacher-countdown');if(el)el.style.display='block';
+  countdownTimer=setInterval(function(){
+    var diff=deadline-new Date();
+    if(diff<=0){stopCountdown();if(collectStatus!=='closed')setCollectStatus('closed');return;}
+    var m=Math.floor(diff/60000),s=Math.floor((diff%60000)/1000),str=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+    var tc=document.getElementById('teacher-countdown');if(tc)tc.textContent=str;
+    var sc2=document.getElementById('stu-countdown-display');if(sc2){sc2.textContent=str;sc2.className='countdown-display'+(diff<60000?' urgent':'');}
+  },1000);
+}
+function stopCountdown(){if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}var el=document.getElementById('teacher-countdown');if(el)el.style.display='none';}
+
+// REALTIME
 function startStatusListener(){
-  if(realtimeChannel) sb.removeChannel(realtimeChannel);
-
-  // 監聽 collectStatus（從 classes 表）
-  realtimeChannel = sb.channel(`class-${classCode}`)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'classes',filter:`id=eq.${classCode}`},
-      payload=>{
-        const cfg=payload.new.config||{};
-        if(cfg.collectStatus){
-          collectStatus=cfg.collectStatus;
-          updateCollectBadge();
-        }
-      })
-    .on('postgres_changes',{event:'*',schema:'public',table:'students',filter:`class_id=eq.${classCode}`},
-      async ()=>{
-        // 重新拉最新學生資料
-        const {data:stus}=await sb.from('students').select('*').eq('class_id',classCode).order('id');
-        if(stus){
-          stus.forEach(remote=>{
-            const local=students.find(s=>s.name===remote.name);
-            if(local){
-              local.wishNbr=remote.wish_nbr||'';
-              local.wishRow=remote.wish_row||'';
-              local.submitted=remote.submitted||false;
-              if(document.getElementById('perm-height').checked&&remote.height) local.height=remote.height;
-              if(document.getElementById('perm-myopia').checked&&remote.myopia) local.myopia=remote.myopia;
-              if(document.getElementById('perm-rank').checked&&remote.rank) local.rank=remote.rank;
-            }
-          });
-        }
-        renderStudentTable();
-        renderStatusGrid();
-      })
-    .subscribe();
+  if(realtimeChannel)sb.removeChannel(realtimeChannel);
+  realtimeChannel=sb.channel('cls-'+classCode)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'classes',filter:'id=eq.'+classCode},function(payload){var cfg=(payload.new&&payload.new.config)||{};if(cfg.collectStatus){collectStatus=cfg.collectStatus;updateCollectBadge();}if(cfg.deadline)deadline=new Date(cfg.deadline);})
+    .on('postgres_changes',{event:'*',schema:'public',table:'students',filter:'class_id=eq.'+classCode},function(payload){
+      var remote=payload.new;
+      if(remote&&remote.name){var local=students.find(function(s){return s.name===remote.name;});if(local){local.wishNbr=remote.wish_nbr||'';local.wishRow=remote.wish_row||'';local.coldLevel=remote.cold_level||3;local.wishWindow=remote.wish_window||'';local.submitted=remote.submitted||false;local.updatedAt=remote.updated_at||'';}addLog('更新',remote.name);setSyncDot('synced','已同步');}
+      renderStudentTable();renderStatusGrid();
+    }).subscribe();
 }
-
 async function setCollectStatus(status){
   collectStatus=status;
-  // 讀取現有config再更新collectStatus欄位
-  const {data:cls}=await sb.from('classes').select('config').eq('id',classCode).single();
-  const cfg=Object.assign({},cls?.config||{},{collectStatus:status});
-  await sb.from('classes').update({config:cfg}).eq('id',classCode);
-  updateCollectBadge();
+  if(isAdminMode){
+    await sb.rpc('admin_set_collect_status',{p_id:classCode,p_status:status});
+  } else {
+    await sb.rpc('set_collect_status',{p_id:classCode,p_pass:teacherPass,p_status:status});
+  }
+  updateCollectBadge();addLog('狀態','→'+status);
 }
-
 function updateCollectBadge(){
-  const badge=document.getElementById('collect-status-badge');
-  if(!badge) return;
-  const map={
-    waiting:{text:'⏸ 等待中',bg:'rgba(46,51,80,.5)',color:'var(--txt2)'},
-    open:   {text:'📬 填寫開放中',bg:'rgba(79,247,164,.12)',color:'var(--acc3)'},
-    closed: {text:'🔒 已截止',bg:'rgba(247,79,79,.12)',color:'var(--red)'},
-  };
-  const s=map[collectStatus]||map.waiting;
-  badge.textContent=s.text; badge.style.background=s.bg; badge.style.color=s.color;
-  // lock/unlock assign button
-  const notice=document.getElementById('assign-locked-notice');
-  if(notice) notice.style.display=collectStatus==='closed'?'none':'block';
+  var badge=document.getElementById('collect-status-badge');if(!badge)return;
+  var map={waiting:{text:'⏸ 等待中',bg:'rgba(46,51,80,.5)',color:'var(--txt2)'},open:{text:'📬 開放中',bg:'rgba(79,247,164,.12)',color:'var(--acc3)'},closed:{text:'🔒 已截止',bg:'rgba(247,79,79,.12)',color:'var(--red)'}};
+  var s=map[collectStatus]||map.waiting;badge.textContent=s.text;badge.style.background=s.bg;badge.style.color=s.color;
+  var notice=document.getElementById('assign-locked-notice');if(notice)notice.style.display=collectStatus==='closed'?'none':'block';
 }
-
 function renderStatusGrid(){
-  const grid=document.getElementById('status-grid');
-  if(!grid) return;
-  const done=students.filter(s=>s.submitted).length;
-  const total=students.length;
-  document.getElementById('prog-inner').style.width=total?`${done/total*100}%`:'0%';
-  document.getElementById('prog-text').textContent=`${done} / ${total} 位學生已填寫`;
+  var grid=document.getElementById('status-grid');if(!grid)return;
+  var done=students.filter(function(s){return s.submitted;}).length,total=students.length;
+  document.getElementById('prog-inner').style.width=total?(done/total*100)+'%':'0%';
+  document.getElementById('prog-text').textContent=done+' / '+total+' 位學生已填寫';
   grid.innerHTML='';
-  students.forEach(s=>{
-    const card=document.createElement('div');
-    card.className='stu-card'+(s.submitted?' done':s.wishNbr||s.wishRow?' partial':'');
-    card.innerHTML=`<div class="sname">${s.name||'—'}</div><div class="sstat">${s.submitted?'✅ 已填寫':s.wishNbr||s.wishRow?'🔶 部分填寫':'⏳ 未填寫'}</div>`;
-    grid.appendChild(card);
-  });
+  students.forEach(function(s){var card=document.createElement('div');card.className='stu-card'+(s.submitted?' done':s.wishNbr||s.wishRow?' partial':'');card.innerHTML='<div class="sname">'+(s.name||'—')+'</div><div class="sstat">'+(s.submitted?'✅ 已填寫':s.wishNbr||s.wishRow?'🔶 部分':'⏳ 未填')+'</div>';grid.appendChild(card);});
 }
 
-// ══════════════════════════════════════════
-//  ASSIGNMENT
-// ══════════════════════════════════════════
+// ASSIGNMENT
+function getAcCells(){var acs=[];for(var r=0;r<6;r++)for(var c=0;c<6;c++)if(cellTypes[r][c].type==='ac')acs.push({r:r,c:c});return acs;}
+function getWindowCells(){var ws=[];for(var r=0;r<6;r++)for(var c=0;c<6;c++)if(cellTypes[r][c].type==='window')ws.push({r:r,c:c});return ws;}
+function distToAc(r,c){var acs=getAcCells();if(!acs.length)return 5;var min=999;acs.forEach(function(a){min=Math.min(min,Math.abs(a.r-r)+Math.abs(a.c-c));});return min;}
+function isWindowCell(r,c){return cellTypes[r][c].type==='window';}
+
 function assignSeats(){
-  if(collectStatus!=='closed'){
-    const notice=document.getElementById('assign-locked-notice');
-    if(notice) notice.style.display='block';
-    return;
-  }
-  swapSel=null;
-  const scores=calcAllScores();
-  if(scores.every(s=>s===null)){
-    document.getElementById('result-grid').innerHTML='<p style="color:var(--txt2);padding:20px;grid-column:1/-1;text-align:center">請先填入學生資料</p>';
-    return;
-  }
-  // sort seats by midpoint desc
-  const seats=[];
-  for(let r=0;r<6;r++) for(let c=0;c<6;c++) seats.push({r,c,mid:mid(r,c)});
-  seats.sort((a,b)=>b.mid-a.mid);
-
-  // sort students by score desc
-  const indexed=students.map((s,i)=>({s,score:scores[i],i}))
-    .filter(x=>x.score!==null).sort((a,b)=>b.score-a.score);
-
-  resultGrid=Array.from({length:6},()=>Array(6).fill(null));
-  indexed.forEach((item,idx)=>{
-    if(idx<seats.length){
-      const seat=seats[idx];
-      resultGrid[seat.r][seat.c]={name:item.s.name||`學生${item.i+1}`,score:item.score,wishNbr:item.s.wishNbr||'',wishRow:item.s.wishRow||''};
-    }
-  });
-
-  // ── Wish post-processing ──
-  optimizeWishes();
-  renderResultGrid();
+  if(collectStatus!=='closed'){var n=document.getElementById('assign-locked-notice');if(n)n.style.display='block';return;}
+  swapSel=null;conflictLog=[];
+  var scores=calcAllScores();
+  if(scores.every(function(s){return s===null;})){document.getElementById('result-grid').innerHTML='<p style="color:var(--txt2);padding:20px;grid-column:1/-1;text-align:center">請先填入學生資料</p>';return;}
+  var seats=[];for(var r=0;r<6;r++)for(var c=0;c<6;c++)if(!cellTypes[r][c].disabled)seats.push({r:r,c:c,score:midpt(r,c)});
+  seats.sort(function(a,b){return b.score-a.score;});
+  var indexed=students.map(function(s,i){return{s:s,score:scores[i],i:i};}).filter(function(x){return x.score!==null;}).sort(function(a,b){return b.score-a.score;});
+  resultGrid=Array.from({length:6},function(){return Array(6).fill(null);});
+  indexed.forEach(function(item,idx){if(idx<seats.length){var seat=seats[idx];resultGrid[seat.r][seat.c]={name:item.s.name||'學生'+(item.i+1),score:item.score,wishNbr:item.s.wishNbr||'',wishRow:item.s.wishRow||'',coldLevel:item.s.coldLevel||3,wishWindow:item.s.wishWindow||''};}});
+  detectConflicts();optimizeWishes();renderResultGrid();addLog('分配','完成');
 }
-
-function rowZone(r){ return r<2?'front':r<4?'mid':'back'; }
-
+function rowZone(r){return r<2?'front':r<4?'mid':'back';}
 function wishScore(grid){
-  const wNbr=+document.getElementById('w-nbr').value;
-  const wRow=+document.getElementById('w-row-w').value;
-  let total=0;
-  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
-    const d=grid[r][c]; if(!d) continue;
-    if(d.wishRow && rowZone(r)===d.wishRow) total+=wRow;
-    if(d.wishNbr){
-      const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
-      const nbOk=neighbors.some(([nr,nc])=>{
-        if(nr<0||nr>5||nc<0||nc>5) return false;
-        return grid[nr][nc]&&grid[nr][nc].name===d.wishNbr;
-      });
-      if(nbOk) total+=wNbr;
-    }
+  var wNbr=+document.getElementById('w-nbr').value,wRow=+document.getElementById('w-row-w').value,wCold=+document.getElementById('w-cold').value,wWin=+document.getElementById('w-window').value;
+  var total=0;
+  for(var r=0;r<6;r++)for(var c=0;c<6;c++){var d=grid[r][c];if(!d)continue;
+    if(d.wishRow&&rowZone(r)===d.wishRow)total+=wRow;
+    if(d.wishNbr){var nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];if(nb.some(function(p){var nr=p[0],nc=p[1];return nr>=0&&nr<6&&nc>=0&&nc<6&&grid[nr][nc]&&grid[nr][nc].name===d.wishNbr;}))total+=wNbr;}
+    if(d.coldLevel&&d.coldLevel!==3){var dist=distToAc(r,c),maxD=10;var coldScore=d.coldLevel<=2?(dist/maxD)*100:((maxD-dist)/maxD)*100;total+=coldScore*(wCold/100);}
+    if(d.wishWindow==='yes'&&isWindowCell(r,c))total+=wWin;
+    if(d.wishWindow==='no'&&!isWindowCell(r,c))total+=wWin;
   }
   return total;
 }
-
 function optimizeWishes(){
-  // only swap students with similar base scores (within 15 pts)
-  const maxIter=200;
-  for(let iter=0;iter<maxIter;iter++){
-    let improved=false;
-    for(let r1=0;r1<6;r1++) for(let c1=0;c1<6;c1++){
-      for(let r2=0;r2<6;r2++) for(let c2=0;c2<6;c2++){
-        if(r1===r2&&c1===c2) continue;
-        const a=resultGrid[r1][c1], b=resultGrid[r2][c2];
-        // allow swap with empty too
-        const scoreDiff=a&&b?Math.abs(a.score-b.score):0;
-        if(a&&b&&scoreDiff>15) continue;
-        const before=wishScore(resultGrid);
-        // try swap
-        resultGrid[r1][c1]=b; resultGrid[r2][c2]=a;
-        const after=wishScore(resultGrid);
-        if(after>before){ improved=true; }
-        else { resultGrid[r1][c1]=a; resultGrid[r2][c2]=b; }
-      }
-    }
-    if(!improved) break;
-  }
+  for(var iter=0;iter<200;iter++){var improved=false;
+    for(var r1=0;r1<6;r1++)for(var c1=0;c1<6;c1++){if(cellTypes[r1][c1].disabled)continue;
+      for(var r2=0;r2<6;r2++)for(var c2=0;c2<6;c2++){if(cellTypes[r2][c2].disabled)continue;if(r1===r2&&c1===c2)continue;
+        var a=resultGrid[r1][c1],b=resultGrid[r2][c2];if(a&&b&&Math.abs(a.score-b.score)>15)continue;
+        var before=wishScore(resultGrid);resultGrid[r1][c1]=b;resultGrid[r2][c2]=a;
+        if(wishScore(resultGrid)>before)improved=true;else{resultGrid[r1][c1]=a;resultGrid[r2][c2]=b;}
+      }}if(!improved)break;}
 }
-
+function detectConflicts(){
+  conflictLog=[];
+  var frontNames=[];for(var r=0;r<2;r++)for(var c=0;c<6;c++)if(resultGrid[r][c])frontNames.push(resultGrid[r][c].name);
+  students.forEach(function(s){
+    if(s.wishRow==='front'&&frontNames.indexOf(s.name)===-1)conflictLog.push({name:s.name,reason:'希望前排，但需求分數較低'});
+    if(s.wishNbr){var found=false;for(var r=0;r<6&&!found;r++)for(var c=0;c<6&&!found;c++)if(resultGrid[r][c]&&resultGrid[r][c].name===s.name){var nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];if(nb.some(function(p){var nr=p[0],nc=p[1];return nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]&&resultGrid[nr][nc].name===s.wishNbr;}))found=true;}if(!found)conflictLog.push({name:s.name,reason:'希望坐'+s.wishNbr+'旁，分數差距大'});}
+    if(s.coldLevel&&s.coldLevel!==3){var placed=null;for(var r2=0;r2<6&&!placed;r2++)for(var c2=0;c2<6&&!placed;c2++)if(resultGrid[r2][c2]&&resultGrid[r2][c2].name===s.name)placed={r:r2,c:c2};if(placed){var dist=distToAc(placed.r,placed.c);if(s.coldLevel<=2&&dist<=2)conflictLog.push({name:s.name,reason:'怕冷但座位靠近冷氣（距離'+dist+'）'});if(s.coldLevel>=4&&dist>=4)conflictLog.push({name:s.name,reason:'偏好冷氣但座位較遠（距離'+dist+'）'});}}
+    if(s.wishWindow){var wp=null;for(var r3=0;r3<6&&!wp;r3++)for(var c3=0;c3<6&&!wp;c3++)if(resultGrid[r3][c3]&&resultGrid[r3][c3].name===s.name)wp={r:r3,c:c3};if(wp){var isWin=isWindowCell(wp.r,wp.c);if(s.wishWindow==='yes'&&!isWin)conflictLog.push({name:s.name,reason:'希望窗戶旁但未分配到'});if(s.wishWindow==='no'&&isWin)conflictLog.push({name:s.name,reason:'不想坐窗戶旁但被分配到'});}}
+  });
+}
 function calcWishResults(){
-  let nbrOk=0,nbrTotal=0,rowOk=0,rowTotal=0;
-  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
-    const d=resultGrid[r][c]; if(!d) continue;
-    if(d.wishNbr){
-      nbrTotal++;
-      const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
-      if(neighbors.some(([nr,nc])=>nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]?.name===d.wishNbr)) nbrOk++;
-    }
-    if(d.wishRow){ rowTotal++; if(rowZone(r)===d.wishRow) rowOk++; }
-  }
-  return {nbrOk,nbrTotal,rowOk,rowTotal};
+  var nbrOk=0,nbrTotal=0,rowOk=0,rowTotal=0,coldOk=0,coldTotal=0,winOk=0,winTotal=0;
+  for(var r=0;r<6;r++)for(var c=0;c<6;c++){var d=resultGrid[r][c];if(!d)continue;
+    if(d.wishNbr){nbrTotal++;var nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];if(nb.some(function(p){var nr=p[0],nc=p[1];return nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]&&resultGrid[nr][nc].name===d.wishNbr;}))nbrOk++;}
+    if(d.wishRow){rowTotal++;if(rowZone(r)===d.wishRow)rowOk++;}
+    if(d.coldLevel&&d.coldLevel!==3){coldTotal++;var dist=distToAc(r,c);if((d.coldLevel<=2&&dist>=3)||(d.coldLevel>=4&&dist<=2))coldOk++;}
+    if(d.wishWindow){winTotal++;var iw=isWindowCell(r,c);if((d.wishWindow==='yes'&&iw)||(d.wishWindow==='no'&&!iw))winOk++;}
+  }return{nbrOk:nbrOk,nbrTotal:nbrTotal,rowOk:rowOk,rowTotal:rowTotal,coldOk:coldOk,coldTotal:coldTotal,winOk:winOk,winTotal:winTotal};
 }
-
 function getWishStatus(r,c){
-  const d=resultGrid[r][c]; if(!d) return '';
-  let nbrOk=false,rowOk=false,hasNbr=!!d.wishNbr,hasRow=!!d.wishRow;
-  if(hasNbr){
-    const neighbors=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];
-    nbrOk=neighbors.some(([nr,nc])=>nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]?.name===d.wishNbr);
-  }
-  if(hasRow) rowOk=rowZone(r)===d.wishRow;
-  if(!hasNbr&&!hasRow) return '';
-  const ok=(hasNbr?nbrOk:true)&&(hasRow?rowOk:true);
-  const part=(hasNbr&&nbrOk)||(hasRow&&rowOk);
+  var d=resultGrid[r][c];if(!d)return'';
+  var checks=[],any=false;
+  if(d.wishNbr){any=true;var nb=[[r-1,c],[r+1,c],[r,c-1],[r,c+1]];checks.push(nb.some(function(p){var nr=p[0],nc=p[1];return nr>=0&&nr<6&&nc>=0&&nc<6&&resultGrid[nr][nc]&&resultGrid[nr][nc].name===d.wishNbr;}));}
+  if(d.wishRow){any=true;checks.push(rowZone(r)===d.wishRow);}
+  if(d.coldLevel&&d.coldLevel!==3){any=true;var dist=distToAc(r,c);checks.push((d.coldLevel<=2&&dist>=3)||(d.coldLevel>=4&&dist<=2));}
+  if(d.wishWindow){any=true;var iw=isWindowCell(r,c);checks.push((d.wishWindow==='yes'&&iw)||(d.wishWindow==='no'&&!iw));}
+  if(!any)return'';
+  var ok=checks.every(function(x){return x;}),part=checks.some(function(x){return x;});
   return ok?'✅':part?'🔶':'❌';
 }
-
-// ══════════════════════════════════════════
-//  RESULT GRID
-// ══════════════════════════════════════════
 function renderResultGrid(){
-  const container=document.getElementById('result-grid');
-  container.innerHTML='';
-  for(let r=0;r<6;r++) for(let c=0;c<6;c++){
-    const cell=document.createElement('div');
-    cell.className='result-cell';
-    const data=resultGrid[r][c];
-    cell.style.background=scoreColor(mid(r,c));
-    if(!data){
-      cell.classList.add('empty-cell');
-      if(swapSel) cell.classList.add('drop-target');
-      cell.innerHTML=`<span style="color:rgba(255,255,255,.15);font-size:14px">·</span>`;
-    } else {
-      const ws=getWishStatus(r,c);
-      cell.innerHTML=`<span class="r-name">${data.name}</span><span class="r-score">${data.score.toFixed(0)}</span>${ws?`<span class="r-wish">${ws}</span>`:''}`;
-    }
-    if(swapSel&&swapSel.r===r&&swapSel.c===c) cell.classList.add('selected');
-    const row=r,col=c;
-    cell.onclick=()=>handleCellClick(row,col);
+  var container=document.getElementById('result-grid');container.innerHTML='';
+  for(var r=0;r<6;r++)for(var c=0;c<6;c++){
+    var cell=document.createElement('div');cell.className='result-cell';
+    var data=resultGrid[r][c],ct=cellTypes[r][c];
+    if(ct.disabled){cell.classList.add('disabled-result');cell.innerHTML='<span style="font-size:16px">🚫</span>';container.appendChild(cell);continue;}
+    cell.style.background=scoreColor(midpt(r,c));
+    var typeIcon=typeIcons[ct.type];
+    if(!data){cell.classList.add('empty-cell');if(swapSel)cell.classList.add('drop-target');cell.innerHTML=(typeIcon?'<span class="r-type">'+typeIcon+'</span>':'')+'<span style="color:rgba(255,255,255,.15);font-size:13px">·</span>';}
+    else{var ws=getWishStatus(r,c);cell.innerHTML=(typeIcon?'<span class="r-type">'+typeIcon+'</span>':'')+'<span class="r-name">'+data.name+'</span><span class="r-score">'+data.score.toFixed(0)+'</span>'+(ws?'<span class="r-wish">'+ws+'</span>':'');}
+    if(swapSel&&swapSel.r===r&&swapSel.c===c)cell.classList.add('selected');
+    (function(row,col){cell.onclick=function(){handleCellClick(row,col);};})(r,c);
     container.appendChild(cell);
   }
-  // wish stats
-  const ws=calcWishResults();
+  var ws=calcWishResults();
   document.getElementById('wish-stats').innerHTML=
-    `<span class="wish-stat">🏘 鄰座：<strong style="color:var(--acc3)">${ws.nbrOk}/${ws.nbrTotal}</strong></span>`+
-    `<span class="wish-stat">📍 排別：<strong style="color:var(--acc3)">${ws.rowOk}/${ws.rowTotal}</strong></span>`;
-  // swap hint
-  const hint=document.getElementById('swap-hint');
-  if(swapSel){
-    const d=resultGrid[swapSel.r][swapSel.c];
-    document.getElementById('swap-name').textContent=d?d.name:'（空格）';
-    hint.classList.add('on');
-  } else { hint.classList.remove('on'); }
+    '<span>🏘 鄰座：<strong style="color:var(--acc3)">'+ws.nbrOk+'/'+ws.nbrTotal+'</strong></span>'+
+    '<span>📍 排別：<strong style="color:var(--acc3)">'+ws.rowOk+'/'+ws.rowTotal+'</strong></span>'+
+    '<span>❄️ 冷氣：<strong style="color:var(--ice)">'+ws.coldOk+'/'+ws.coldTotal+'</strong></span>'+
+    '<span>🪟 窗戶：<strong style="color:var(--acc2)">'+ws.winOk+'/'+ws.winTotal+'</strong></span>';
+  var hint=document.getElementById('swap-hint');
+  if(swapSel){var d2=resultGrid[swapSel.r][swapSel.c];document.getElementById('swap-name').textContent=d2?d2.name:'（空格）';hint.classList.add('on');}
+  else hint.classList.remove('on');
 }
+function handleCellClick(r,c){if(cellTypes[r][c].disabled)return;if(!swapSel){swapSel={r:r,c:c};renderResultGrid();return;}if(swapSel.r===r&&swapSel.c===c){swapSel=null;renderResultGrid();return;}var tmp=resultGrid[swapSel.r][swapSel.c];resultGrid[swapSel.r][swapSel.c]=resultGrid[r][c];resultGrid[r][c]=tmp;swapSel=null;renderResultGrid();}
+function exportText(){var txt='=== 座位分配結果 ===\n\n黑板\n\n';for(var r=0;r<6;r++)txt+=resultGrid[r].map(function(d,c){return cellTypes[r][c].disabled?'[停用]':d?d.name.padEnd(4,'　'):'（空）';}).join(' | ')+'\n';navigator.clipboard.writeText(txt).then(function(){alert('已複製！');}).catch(function(){alert('請手動複製');});}
 
-function handleCellClick(r,c){
-  if(!swapSel){ swapSel={r,c}; renderResultGrid(); return; }
-  if(swapSel.r===r&&swapSel.c===c){ swapSel=null; renderResultGrid(); return; }
-  const tmp=resultGrid[swapSel.r][swapSel.c];
-  resultGrid[swapSel.r][swapSel.c]=resultGrid[r][c];
-  resultGrid[r][c]=tmp;
-  swapSel=null; renderResultGrid();
+// PING
+async function pingSupabase(){var el=document.getElementById('dev-ping');if(el)el.textContent='測量中...';var t0=Date.now();try{await sb.from('classes').select('id').limit(1);var ms=Date.now()-t0;if(el){el.textContent=ms+' ms';el.style.color=ms<200?'var(--acc3)':ms<500?'var(--acc2)':'var(--red)';}setSyncDot('synced','已連線');}catch(e){if(el){el.textContent='失敗';el.style.color='var(--red)';}setSyncDot('error','錯誤');}}
+
+function renderActivityLog(){var al=document.getElementById('activity-log');if(!al)return;al.innerHTML=!activityLog.length?'<p style="color:var(--txt2)">等待資料...</p>':activityLog.map(function(l){return'<div class="log-item"><span class="li-time">'+l.t+'</span><span class="li-action">'+l.action+'</span>'+(l.detail?' <span style="color:var(--txt2)">— '+l.detail+'</span>':'')+'</div>';}).join('');}
+
+// STUDENT
+async function saveStudentSecQ(){
+  if(!currentStudentName||!classCode){alert('請先登入');return;}
+  var sqEl=document.getElementById('stu-sq'),saEl=document.getElementById('stu-sa'),sqcEl=document.getElementById('stu-sq-custom');
+  var sq=sqEl?sqEl.value:'',sa=saEl?(saEl.value.trim().toLowerCase()):'',sqc=sqcEl?sqcEl.value.trim():'';
+  if(!sq||!sa){alert('請選擇問題並填寫答案');return;}
+  var res=await sb.rpc('save_student_sec_q',{p_class_id:classCode,p_name:currentStudentName,p_pass:currentStudentPw,p_sec_q:sq,p_sec_a:sa,p_sec_q_custom:sqc});
+  if(res.error||!res.data||!res.data.ok){alert('儲存失敗：'+(res.data&&res.data.err||res.error&&res.error.message||''));return;}
+  var ok=document.getElementById('stu-sq-saved');if(ok){ok.style.display='block';setTimeout(function(){ok.style.display='none';},3000);}
 }
-
-function exportText(){
-  let txt='=== 座位分配結果 ===\n\n黑板\n\n';
-  for(let r=0;r<6;r++) txt+=resultGrid[r].map(d=>d?d.name.padEnd(4,'　'):'（空）').join(' | ')+'\n';
-  navigator.clipboard.writeText(txt).then(()=>alert('已複製！')).catch(()=>alert('請手動複製'));
+function reEditWish(){
+  if(collectStatus==='closed'){alert('填寫已截止，無法修改。');return;}
+  document.getElementById('submit-result').style.display='none';
+  document.getElementById('stu-form-inner').style.display='block';
 }
+function selectCold(v){selectedColdLevel=v;document.querySelectorAll('.wish-3btn[data-v]').forEach(function(b){b.classList.toggle('selected-cold',+b.dataset.v===v);});}
+function selectWindow(v){selectedWindow=v;document.querySelectorAll('.wish-3btn[data-w]').forEach(function(b){b.classList.remove('selected-window-yes','selected-window-no');if(b.dataset.w===v){b.classList.add(v==='yes'?'selected-window-yes':v==='no'?'selected-window-no':'');} });}
 
-// ══════════════════════════════════════════
-//  STUDENT MODE
-// ══════════════════════════════════════════
-async function enterStudentMode(cls, name){
-  document.getElementById('landing').style.display='none';
-  document.getElementById('student-view').style.display='block';
-  currentStudentName=name; classCode=cls;
-  document.getElementById('stu-classname').textContent=`班級：${cls}`;
+async function enterStudentMode(cls,name){
+  hideAll();document.getElementById('student-view').style.display='block';
+  currentStudentName=name;classCode=cls;
+  document.getElementById('stu-classname').textContent='班級：'+cls;
   document.getElementById('stu-name-display').textContent=name;
-
-  // 即時監聽 collectStatus
-  sb.channel(`stu-status-${cls}`)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'classes',filter:`id=eq.${cls}`},
-      payload=>{
-        const status=(payload.new.config||{}).collectStatus||'waiting';
-        applyStudentStatus(status);
-      })
-    .subscribe();
-
-  // 讀取 config
-  const {data:cls_data}=await sb.from('classes').select('config').eq('id',cls).single();
-  const cfg=cls_data?.config||{};
+  sb.channel('stu-'+cls).on('postgres_changes',{event:'UPDATE',schema:'public',table:'classes',filter:'id=eq.'+cls},function(payload){var cfg=(payload.new&&payload.new.config)||{};applyStudentStatus(cfg.collectStatus||'waiting');if(cfg.deadline){deadline=new Date(cfg.deadline);startStudentCountdown();}}).subscribe();
+  var cres=await sb.from('classes').select('config').eq('id',cls).single();
+  var cfg=(cres.data&&cres.data.config)||{};
   applyStudentStatus(cfg.collectStatus||'waiting');
-
-  const showDataCard=cfg.permHeight||cfg.permMyopia||cfg.permRank;
-  if(showDataCard) document.getElementById('stu-data-card').style.display='block';
+  if(cfg.deadline){deadline=new Date(cfg.deadline);startStudentCountdown();}
+  var showData=cfg.permHeight||cfg.permMyopia||cfg.permRank;
+  if(showData)document.getElementById('stu-data-card').style.display='block';
   document.getElementById('stu-height-field').style.display=cfg.permHeight?'block':'none';
   document.getElementById('stu-myopia-field').style.display=cfg.permMyopia?'block':'none';
   document.getElementById('stu-rank-field').style.display=cfg.permRank?'block':'none';
-
-  // 讀取學生現有資料
-  const {data:me}=await sb.from('students').select('*').eq('class_id',cls).eq('name',name).single();
-  if(me){
-    if(me.height) document.getElementById('stu-height').value=me.height;
-    if(me.myopia) document.getElementById('stu-myopia').value=me.myopia;
-    if(me.rank)   document.getElementById('stu-rank').value=me.rank;
-    if(me.wish_nbr) document.getElementById('stu-wish-nbr').value=me.wish_nbr;
-    if(me.wish_row) document.getElementById('stu-wish-row').value=me.wish_row;
-    if(me.submitted){
-      document.getElementById('stu-form-inner').style.display='none';
-      document.getElementById('submit-result').style.display='block';
-    }
+  var cmates=await sb.from('students').select('name').eq('class_id',cls).order('id');
+  if(cmates.data){var sel=document.getElementById('stu-wish-nbr');cmates.data.forEach(function(c){if(c.name!==name){var o=document.createElement('option');o.value=c.name;o.textContent=c.name;sel.appendChild(o);}});}
+  var mres=await sb.from('students').select('id,name,height,myopia,rank,wish_nbr,wish_row,cold_level,wish_window,submitted,stu_sec_q,stu_sec_q_custom').eq('class_id',cls).eq('name',name).single();
+  if(mres.data){var me=mres.data;
+    if(me.height)document.getElementById('stu-height').value=me.height;
+    if(me.myopia)document.getElementById('stu-myopia').value=me.myopia;
+    if(me.rank)document.getElementById('stu-rank').value=me.rank;
+    if(me.wish_nbr)document.getElementById('stu-wish-nbr').value=me.wish_nbr;
+    if(me.wish_row)document.getElementById('stu-wish-row').value=me.wish_row;
+    if(me.cold_level){selectedColdLevel=me.cold_level;selectCold(me.cold_level);}
+    if(me.wish_window){selectedWindow=me.wish_window;selectWindow(me.wish_window);}
+    if(me.stu_sec_q){var stsq=document.getElementById('stu-sq');if(stsq){stsq.value=me.stu_sec_q;onStuSecQChange();}}
+    if(me.stu_sec_q_custom){var stsqc=document.getElementById('stu-sq-custom');if(stsqc)stsqc.value=me.stu_sec_q_custom;}
+    if(me.stu_sec_a){var stsa=document.getElementById('stu-sa');if(stsa)stsa.value=me.stu_sec_a;}
+    if(me.submitted){document.getElementById('stu-form-inner').style.display='none';document.getElementById('submit-result').style.display='block';}
   }
+  setSyncDot('synced','已連線');
 }
-
-function applyStudentStatus(status){
-  document.getElementById('stu-status-waiting').style.display=status==='waiting'?'block':'none';
-  document.getElementById('stu-status-closed').style.display=status==='closed'?'block':'none';
-  document.getElementById('stu-form-inner').style.display=status==='open'?'block':'none';
-}
-
+function applyStudentStatus(status){document.getElementById('stu-status-waiting').style.display=status==='waiting'?'block':'none';document.getElementById('stu-status-closed').style.display=status==='closed'?'block':'none';document.getElementById('stu-form-inner').style.display=status==='open'?'block':'none';}
+function startStudentCountdown(){if(!deadline)return;document.getElementById('stu-countdown-box').style.display='block';if(countdownTimer)clearInterval(countdownTimer);countdownTimer=setInterval(function(){var diff=deadline-new Date();if(diff<=0){clearInterval(countdownTimer);applyStudentStatus('closed');return;}var m=Math.floor(diff/60000),s=Math.floor((diff%60000)/1000);var el=document.getElementById('stu-countdown-display');if(el){el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;el.className='countdown-display'+(diff<60000?' urgent':'');}},1000);}
 async function submitStudentWish(){
-  const cls=classCode, name=currentStudentName;
-  const update={
-    wish_nbr: document.getElementById('stu-wish-nbr').value.trim(),
-    wish_row: document.getElementById('stu-wish-row').value,
-    submitted: true,
-    updated_at: new Date().toISOString(),
-  };
-  if(document.getElementById('stu-height-field').style.display!=='none'){
-    const h=document.getElementById('stu-height').value;
-    if(h) update.height=+h;
-  }
-  if(document.getElementById('stu-myopia-field').style.display!=='none'){
-    const m=document.getElementById('stu-myopia').value;
-    if(m) update.myopia=+m;
-  }
-  if(document.getElementById('stu-rank-field').style.display!=='none'){
-    const r=document.getElementById('stu-rank').value;
-    if(r) update.rank=+r;
-  }
-  const {error}=await sb.from('students').update(update).eq('class_id',cls).eq('name',name);
-  if(error){ alert('送出失敗，請重試'); return; }
-  document.getElementById('stu-form-inner').style.display='none';
-  document.getElementById('submit-result').style.display='block';
+  var stuSqEl=document.getElementById('stu-sq'),stuSaEl=document.getElementById('stu-sa'),stuSqcEl=document.getElementById('stu-sq-custom');
+  var update={wish_nbr:document.getElementById('stu-wish-nbr').value,wish_row:document.getElementById('stu-wish-row').value,cold_level:selectedColdLevel,wish_window:selectedWindow,submitted:true,updated_at:new Date().toISOString(),
+    stu_sec_q:stuSqEl?stuSqEl.value:'',stu_sec_a:stuSaEl?(stuSaEl.value.trim().toLowerCase()):'',
+    stu_sec_q_custom:stuSqcEl?stuSqcEl.value.trim():''};
+  if(document.getElementById('stu-height-field').style.display!=='none'){var h=document.getElementById('stu-height').value;if(h)update.height=+h;}
+  if(document.getElementById('stu-myopia-field').style.display!=='none'){var m=document.getElementById('stu-myopia').value;if(m)update.myopia=+m;}
+  if(document.getElementById('stu-rank-field').style.display!=='none'){var rk=document.getElementById('stu-rank').value;if(rk)update.rank=+rk;}
+  var res=await sb.rpc('update_student_wish',{p_class_id:classCode,p_name:currentStudentName,p_pass:currentStudentPw,p_data:update});
+  if(res.error||!res.data||!res.data.ok){alert('送出失敗：'+(res.data&&res.data.err||res.error&&res.error.message||''));return;}
+  document.getElementById('stu-form-inner').style.display='none';document.getElementById('submit-result').style.display='block';setSyncDot('synced','已送出');
 }
 
-// ══════════════════════════════════════════
-//  DEMO
-// ══════════════════════════════════════════
+// DEMO
 function loadDemo(){
-  const names=['陳小明','林雅婷','王俊宏','張美玲','李建志','吳雅雯','劉家豪','陳怡君','黃志偉','林淑惠',
-    '楊文傑','蔡佳蓉','許志明','鄭淑芬','謝家豪','洪雅婷','簡文輝','游佳蓉','賴建宏','邱怡萍',
-    '盧志偉','莊雅雯','江文傑','沈淑芬','高家豪','曾美玲','韓志明','馮雅婷','魏俊宏','呂文傑',
-    '石淑芬','田家豪','孫雅雯','葉美玲','方志明'];
-  const wishes=['front','mid','back','','front','','mid','','back','front',
-    '','mid','','back','','front','mid','','','back',
-    'front','','mid','back','','','front','mid','','back',
-    '','','front','','mid'];
-  students=names.map((name,i)=>({
-    name,height:Math.round(155+Math.random()*30),myopia:Math.round(Math.random()*800),rank:i+1,
-    wishNbr:i%4===0?names[(i+1)%35]:'',wishRow:wishes[i]||''
-  }));
-  renderStudentTable();
-  alert('已載入35位範例學生（含部分願望）！');
+  var names=['陳小明','林雅婷','王俊宏','張美玲','李建志','吳雅雯','劉家豪','陳怡君','黃志偉','林淑惠','楊文傑','蔡佳蓉','許志明','鄭淑芬','謝家豪','洪雅婷','簡文輝','游佳蓉','賴建宏','邱怡萍','盧志偉','莊雅雯','江文傑','沈淑芬','高家豪','曾美玲','韓志明','馮雅婷','魏俊宏','呂文傑','石淑芬','田家豪','孫雅雯','葉美玲','方志明'];
+  var rows=['front','mid','back','','front','','mid','','back','front','','mid','','back','','front','mid','','','back','front','','mid','back','','','front','mid','','back','','','front','','mid'];
+  var wins=['yes','','no','yes','','','no','yes','','','yes','no','','','yes','','no','','yes','','','no','','yes','no','','','','yes','','no','','','yes',''];
+  students=names.map(function(name,i){return{name:name,height:Math.round(155+Math.random()*30),myopia:Math.round(Math.random()*800),rank:i+1,wishNbr:i%4===0?names[(i+1)%35]:'',wishRow:rows[i]||'',coldLevel:Math.ceil(Math.random()*5),wishWindow:wins[i]||'',submitted:false,studentPw:String(100+Math.floor(Math.random()*900))};});
+  renderStudentTable();alert('已載入35位範例學生！');
 }
-
-// ══════════════════════════════════════════
-//  URL PARAM CHECK ON LOAD
-// ══════════════════════════════════════════
-window.addEventListener('DOMContentLoaded',()=>{
-  const p=new URLSearchParams(location.search);
-  if(p.get('mode')==='student'&&p.get('class')&&p.get('name')){
-    enterStudentMode(p.get('class'),p.get('name'));
-  }
-});</script>
+</script>
 </body>
 </html>
