@@ -179,9 +179,73 @@ td select option{background:var(--bg);color:var(--txt)}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:700;display:none}
 .modal-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sur);border:1px solid var(--bdr);border-radius:14px;padding:22px;z-index:701;width:min(340px,90vw);box-shadow:0 8px 40px rgba(0,0,0,.7);display:none}
 .modal-box h4{font-family:monospace;font-size:13px;color:var(--acc3);margin-bottom:14px}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;top:20px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--txt);box-shadow:0 4px 20px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px;max-width:280px;animation:slideIn .25s ease;pointer-events:auto}
+.toast.success{border-color:var(--acc3);background:rgba(79,247,164,.08)}
+.toast.error{border-color:var(--red);background:rgba(247,79,79,.08)}
+.toast.info{border-color:var(--acc);background:rgba(79,142,247,.08)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(20px)}}
+/* ── SPINNER ── */
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn.loading{opacity:.7;pointer-events:none;display:flex;align-items:center;gap:6px}
+/* ── LANDING 手機優化 ── */
+@media(max-width:480px){
+  .landing-btns{flex-direction:column;width:100%;max-width:280px}
+  .big-btn{width:100%;padding:16px 24px}
+  #login-form-box{width:100%}
+}
+/* ── TABS 手機只顯示 emoji ── */
+.tab .tab-text{display:inline}
+@media(max-width:520px){
+  .tab .tab-text{display:none}
+  .tab{min-width:36px;padding:8px 6px;font-size:16px}
+  .tab.active{min-width:36px}
+}
+/* ── STICKY BOTTOM TOOLBAR ── */
+.sticky-toolbar{position:sticky;bottom:0;z-index:50;background:var(--bg);border-top:1px solid var(--bdr);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;margin:0 -12px;margin-top:14px}
+/* ── STATUS BUTTONS 視覺層級 ── */
+.btn.open-btn{background:rgba(79,247,164,.12);border-color:var(--acc3);color:var(--acc3);font-weight:600}
+.btn.open-btn:hover{background:rgba(79,247,164,.2)}
+.btn.close-btn{background:rgba(247,79,79,.15);border-color:var(--red);color:var(--red);font-weight:600;font-size:13px;padding:9px 18px}
+.btn.close-btn:hover{background:rgba(247,79,79,.25)}
+.btn.reset-btn{font-size:11px;padding:5px 10px;color:var(--txt2)}
+/* ── SEAT MAP ROW LABELS ── */
+.seat-map-wrap{display:flex;gap:4px;align-items:flex-start}
+.seat-row-labels{display:flex;flex-direction:column;gap:4px;padding-top:0}
+.seat-row-label{height:86px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--txt2);font-family:monospace;width:20px;flex-shrink:0;writing-mode:horizontal-tb}
+.seat-row-label.front-lbl{color:var(--red);opacity:.7}
+.seat-row-label.mid-lbl{color:var(--acc2);opacity:.7}
+.seat-row-label.back-lbl{color:var(--acc);opacity:.7}
+/* ── RESULT CELL 改善 ── */
+.result-cell .r-name{font-size:clamp(9px,2vw,12px);font-weight:600}
+/* ── ADMIN SEARCH ── */
+.admin-search{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);padding:8px 12px;font-size:13px;outline:none;margin-bottom:12px}
+.admin-search:focus{border-color:var(--acc)}
+/* ── CLASS CARD PROGRESS ── */
+.ca-prog{height:3px;background:var(--bdr);border-radius:2px;overflow:hidden;margin-top:6px;width:100%}
+.ca-prog-inner{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc3));border-radius:2px;transition:width .5s}
+/* ── SWAP HINT 改善 ── */
+.swap-hint{animation:swayIn .2s ease}
+@keyframes swayIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+/* ── WISH CHIPS（學生端） ── */
+.chip-group{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{padding:6px 12px;border-radius:99px;border:1.5px solid var(--bdr);background:var(--sur2);color:var(--txt2);font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.chip:hover{border-color:var(--acc)}
+.chip.chip-cold-sel{border-color:var(--ice);background:rgba(127,207,255,.12);color:var(--ice)}
+.chip.chip-win-yes{border-color:var(--acc3);background:rgba(79,247,164,.1);color:var(--acc3)}
+.chip.chip-win-no{border-color:var(--red);background:rgba(247,79,79,.1);color:var(--red)}
+.chip.chip-win-meh{border-color:var(--txt2);background:rgba(139,144,168,.1);color:var(--txt2)}
+/* ── 通用改善 ── */
+.card h3{display:flex;align-items:center;gap:6px}
+.section-divider{height:1px;background:var(--bdr);margin:14px 0;opacity:.5}
 </style>
 </head>
 <body>
+<div id="toast-container"></div>
 <div id="sync-dot"><span class="dot"></span><span id="sync-text">—</span></div>
 
 <!-- TYPE MENU -->
@@ -201,6 +265,7 @@ td select option{background:var(--bg);color:var(--txt)}
   <div class="landing-btns">
     <button class="big-btn" onclick="showLoginForm('teacher')"><span class="icon">👩‍🏫</span>老師模式</button>
     <button class="big-btn" onclick="showLoginForm('student')"><span class="icon">🎒</span>學生模式</button>
+    <p style="font-size:10px;color:var(--txt2);text-align:center;margin-top:4px">v2.0 · 資料加密儲存於 Supabase</p>
   </div>
   <div id="login-form-box">
     <h3 id="login-form-title" style="font-size:13px;color:var(--acc3);margin-bottom:14px;font-family:monospace"></h3>
@@ -250,12 +315,12 @@ td select option{background:var(--bg);color:var(--txt)}
 <div class="wrap">
   <header class="app-header"><h2>👩‍🏫 老師控制台</h2><p id="class-label">班級：—</p></header>
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('setup')">⚙️ 設定</button>
-    <button class="tab" onclick="switchTab('formula')">⚖️ 公式</button>
-    <button class="tab" onclick="switchTab('students')">👥 學生</button>
-    <button class="tab" onclick="switchTab('qr')">📱 QR碼</button>
-    <button class="tab" onclick="switchTab('status')">📡 狀態</button>
-    <button class="tab" onclick="switchTab('result')">📋 結果</button>
+    <button class="tab active" onclick="switchTab('setup')">⚙️<span class="tab-text"> 設定</span></button>
+    <button class="tab" onclick="switchTab('formula')">⚖️<span class="tab-text"> 公式</span></button>
+    <button class="tab" onclick="switchTab('students')">👥<span class="tab-text"> 學生</span></button>
+    <button class="tab" onclick="switchTab('qr')">📱<span class="tab-text"> QR碼</span></button>
+    <button class="tab" onclick="switchTab('status')">📡<span class="tab-text"> 狀態</span></button>
+    <button class="tab" onclick="switchTab('result')">📋<span class="tab-text"> 結果</span></button>
   </div>
 
   <div id="tab-setup" class="panel active">
@@ -279,9 +344,9 @@ td select option{background:var(--bg);color:var(--txt)}
       <div class="field" id="cfg-sq-custom-wrap" style="display:none"><label>自訂問題內容</label><input id="cfg-sq-custom" placeholder="輸入你的安全問題" oninput="saveCfg()"></div>
       <div class="field"><label>安全問題答案（不區分大小寫）</label><input id="cfg-sa" placeholder="輸入你的答案" oninput="saveCfg()"></div>
       <div style="font-size:10px;color:var(--txt2);margin-top:-6px;margin-bottom:8px">忘記老師密碼時回答正確即可重設。</div>
-      <div class="btn-row" style="margin-top:6px">
-        <button class="btn pri" onclick="saveToSupabase()">☁️ 儲存</button>
-        <button class="btn danger" onclick="resetClass()">🗑 清除班級</button>
+      <div class="sticky-toolbar">
+        <button class="btn pri" onclick="saveToSupabase()" id="save-btn">☁️ 儲存設定</button>
+        <button class="btn danger" onclick="resetClass()" style="margin-left:auto">🗑 清除班級</button>
       </div>
     </div>
     <div class="card">
@@ -312,7 +377,17 @@ td select option{background:var(--bg);color:var(--txt)}
     <div class="card">
       <h3>// 座位地圖 <span style="font-size:10px;color:var(--txt2);font-family:system-ui">雙滑桿調分數 · 點格子設類型/停用</span></h3>
       <div class="blackboard">█ 黑 板 █</div>
-      <div class="seat-grid" id="seat-score-grid"></div>
+      <div class="seat-map-wrap">
+        <div class="seat-row-labels">
+          <div class="seat-row-label front-lbl">前1</div>
+          <div class="seat-row-label front-lbl">前2</div>
+          <div class="seat-row-label mid-lbl">中3</div>
+          <div class="seat-row-label mid-lbl">中4</div>
+          <div class="seat-row-label back-lbl">後5</div>
+          <div class="seat-row-label back-lbl">後6</div>
+        </div>
+        <div class="seat-grid" id="seat-score-grid" style="flex:1"></div>
+      </div>
       <div class="legend"><span><span class="legend-dot" style="background:#f74f4f"></span>高分前排</span><span><span class="legend-dot" style="background:#4f8ef7"></span>低分後排</span><span>❄️冷氣</span><span>🪟窗戶</span><span>🚫停用</span></div>
     </div>
   </div>
@@ -350,9 +425,9 @@ td select option{background:var(--bg);color:var(--txt)}
       <h3>// 填寫狀態控制</h3>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
         <div id="collect-status-badge" style="padding:5px 12px;border-radius:99px;font-size:12px;font-family:monospace;font-weight:700;background:rgba(46,51,80,.5);color:var(--txt2)">⏸ 等待中</div>
-        <button class="btn ok" onclick="setCollectStatus('open')">📬 開放</button>
-        <button class="btn danger" onclick="setCollectStatus('closed')">🔒 截止</button>
-        <button class="btn" onclick="setCollectStatus('waiting')">⏸ 重設</button>
+        <button class="btn open-btn" onclick="setCollectStatus('open')">📬 開放填寫</button>
+        <button class="btn close-btn" onclick="setCollectStatus('closed')">🔒 立即截止</button>
+        <button class="btn reset-btn" onclick="setCollectStatus('waiting')">⏸ 重設</button>
       </div>
       <div class="field"><label>截止時間（到時自動截止）</label><input type="datetime-local" id="deadline-input" oninput="setDeadline()"></div>
       <div id="teacher-countdown" style="display:none" class="countdown-display">--:--</div>
@@ -372,7 +447,17 @@ td select option{background:var(--bg);color:var(--txt)}
       <div class="wish-stats" id="wish-stats"></div>
       <div id="swap-hint" class="swap-hint">✦ 已選取：<strong id="swap-name"></strong> → 點目標格移動，再點同格取消</div>
       <div class="blackboard" style="margin-bottom:10px">█ 黑 板 █</div>
-      <div class="result-seat-grid" id="result-grid"></div>
+      <div class="seat-map-wrap">
+        <div class="seat-row-labels" style="height:auto">
+          <div class="seat-row-label front-lbl" style="height:58px">前1</div>
+          <div class="seat-row-label front-lbl" style="height:58px">前2</div>
+          <div class="seat-row-label mid-lbl" style="height:58px">中3</div>
+          <div class="seat-row-label mid-lbl" style="height:58px">中4</div>
+          <div class="seat-row-label back-lbl" style="height:58px">後5</div>
+          <div class="seat-row-label back-lbl" style="height:58px">後6</div>
+        </div>
+        <div class="result-seat-grid" id="result-grid" style="flex:1"></div>
+      </div>
       <div class="btn-row" style="margin-top:8px">
         <button class="btn pri" onclick="assignSeats()">🔄 執行分配</button>
         <button class="btn" onclick="exportText()">📋 複製</button>
@@ -408,19 +493,19 @@ td select option{background:var(--bg);color:var(--txt)}
         <div class="field"><label>希望坐在誰旁邊？</label><select id="stu-wish-nbr"><option value="">不指定</option></select></div>
         <div class="field"><label>希望坐在哪一區？</label><select id="stu-wish-row"><option value="">不指定</option><option value="front">前排（1~2排）</option><option value="mid">中排（3~4排）</option><option value="back">後排（5~6排）</option></select></div>
         <div class="field" style="margin-top:10px">
-          <label>❄️ 對冷氣的偏好？</label>
-          <div class="wish-3btns">
-            <div class="wish-3btn" onclick="selectCold(1)" data-v="1">🥶 很怕冷<br><small>遠離冷氣</small></div>
-            <div class="wish-3btn" onclick="selectCold(3)" data-v="3">😐 無所謂<br><small>隨機即可</small></div>
-            <div class="wish-3btn" onclick="selectCold(5)" data-v="5">🔥 很怕熱<br><small>靠近冷氣</small></div>
+          <label style="margin-bottom:6px">❄️ 冷氣偏好</label>
+          <div class="chip-group">
+            <div class="chip" onclick="selectCold(1)" data-v="1">🥶 遠離冷氣</div>
+            <div class="chip" onclick="selectCold(3)" data-v="3">😐 無所謂</div>
+            <div class="chip" onclick="selectCold(5)" data-v="5">🔥 靠近冷氣</div>
           </div>
         </div>
         <div class="field" style="margin-top:10px">
-          <label>🪟 對窗戶的偏好？</label>
-          <div class="wish-3btns">
-            <div class="wish-3btn" onclick="selectWindow('yes')" data-w="yes">✅ 希望坐窗戶旁<br><small>喜歡採光/通風</small></div>
-            <div class="wish-3btn" onclick="selectWindow('')" data-w="">😐 無所謂<br><small>隨機即可</small></div>
-            <div class="wish-3btn" onclick="selectWindow('no')" data-w="no">❌ 不想坐窗戶旁<br><small>怕曬/冷風</small></div>
+          <label style="margin-bottom:6px">🪟 窗戶偏好</label>
+          <div class="chip-group">
+            <div class="chip" onclick="selectWindow('yes')" data-w="yes">✅ 想坐窗戶旁</div>
+            <div class="chip" onclick="selectWindow('')" data-w="">😐 無所謂</div>
+            <div class="chip" onclick="selectWindow('no')" data-w="no">❌ 不想坐窗戶旁</div>
           </div>
         </div>
       </div>
@@ -443,7 +528,7 @@ td select option{background:var(--bg);color:var(--txt)}
         <button class="btn ok" style="width:100%;margin-top:4px" onclick="saveStudentSecQ()">🔒 單獨儲存安全問題</button>
         <p id="stu-sq-saved" style="font-size:11px;color:var(--acc3);text-align:center;margin-top:6px;display:none">✅ 安全問題已儲存</p>
       </div>
-      <button class="btn pri" style="width:100%;padding:13px;font-size:14px;border-radius:10px;margin-top:4px" onclick="submitStudentWish()">✉️ 送出願望</button>
+      <button class="btn pri" style="width:100%;padding:13px;font-size:14px;border-radius:10px;margin-top:4px" id="submit-wish-btn" onclick="submitStudentWish()">✉️ 送出願望</button>
     </div>
   </div>
   <div class="submit-result" id="submit-result">
@@ -481,6 +566,7 @@ td select option{background:var(--bg);color:var(--txt)}
   </div>
   <div class="card">
     <h3>// 所有班級</h3>
+    <input class="admin-search" id="admin-search" placeholder="🔍 搜尋班級代碼..." oninput="filterAdminClasses()" style="display:none">
     <div id="admin-class-list"><p style="font-size:12px;color:var(--txt2)">載入中...</p></div>
   </div>
   <div class="card">
@@ -584,7 +670,7 @@ async function sendDevPasswordReset(){
   var email=document.getElementById('dev-email').value.trim();
   if(!email){alert('請先輸入 Email');return;}
   var res=await sb.auth.resetPasswordForEmail(email,{redirectTo:DEPLOY_URL});
-  if(res.error){alert('發送失敗：'+res.error.message);return;}
+  if(res.error){toast('發送失敗：'+res.error.message,'error');return;}
   document.getElementById('dev-reset-ok').style.display='block';
 }
 
@@ -615,7 +701,7 @@ async function loadAdminData(){
 async function enterClassAsAdmin(id){
   classCode=id;
   var res=await sb.rpc('admin_get_class_data',{p_id:id});
-  if(res.error||!res.data||!res.data.ok){alert('載入失敗：'+(res.data&&res.data.err||''));return;}
+  if(res.error||!res.data||!res.data.ok){toast('進入班級失敗','error');return;return;}
   var d=res.data;var cfg=(d.class&&d.class.config)||{};
   // 套用設定
   if(cfg.seatRanges)seatRanges=JSON.parse(cfg.seatRanges);
@@ -635,7 +721,7 @@ async function enterClassAsAdmin(id){
 async function deleteClass(id){
   if(!confirm('確定刪除班級「'+id+'」及其所有學生資料？此操作無法復原。'))return;
   var res=await sb.rpc('admin_delete_class',{p_id:id});
-  if(res.error||!res.data||!res.data.ok){alert('刪除失敗：'+(res.data&&res.data.err||'請確認超管身份'));return;}
+  if(res.error||!res.data||!res.data.ok){toast('刪除失敗：請確認超管身份','error');return;}
   addLog('刪除班級',id);loadAdminData();
 }
 
@@ -776,8 +862,8 @@ function enterTeacherMode(){
 }
 function saveCfg(){var c=document.getElementById('cfg-class').value.trim();if(c)classCode=c;var p=document.getElementById('cfg-pass').value;if(p)teacherPass=p;}
 async function saveToSupabase(){
-  if(!classCode){alert('請先填班級代碼');return;}
-  setSyncDot('','儲存中...');
+  if(!classCode){toast('請先填入班級代碼','error');return;}
+  btnLoad('save-btn',true,'儲存中...');setSyncDot('','儲存中...');
   var deployUrl=document.getElementById('admin-deploy-url')?document.getElementById('admin-deploy-url').value:DEPLOY_URL;
   var sqEl=document.getElementById('cfg-sq'),saEl=document.getElementById('cfg-sa'),sqcEl=document.getElementById('cfg-sq-custom');
   var cfg={pass:teacherPass,url:deployUrl,
@@ -801,7 +887,7 @@ async function saveToSupabase(){
     var stuRes=await sb.rpc('upsert_students',{p_class_id:classCode,p_pass:teacherPass,p_students:stuArr});
     if(stuRes.error||!stuRes.data||!stuRes.data.ok){alert('學生資料儲存失敗：'+(stuRes.data&&stuRes.data.err||stuRes.error&&stuRes.error.message||'unknown'));return;}
   }
-  setSyncDot('synced','已儲存');addLog('儲存','資料同步');alert('✅ 已儲存！');
+  btnLoad('save-btn',false);setSyncDot('synced','已儲存');addLog('儲存','資料同步');toast('已儲存','success');
 }
 async function loadFromSupabase(){
   var res=await sb.from('classes').select('id,config,created_at').eq('id',classCode).single();
@@ -825,13 +911,13 @@ async function resetClass(){
   var res=await sb.rpc('admin_delete_class',{p_id:classCode});
   if(res.error||!res.data||!res.data.ok){
     // 若不是管理員，用老師密碼驗證後刪
-    if(!teacherPass){alert('請先登入');return;}
+    if(!teacherPass){toast('請先登入','error');return;}
     var v=await sb.rpc('verify_teacher',{p_id:classCode,p_pass:teacherPass});
     if(v.error||v.data===false){alert('密碼驗證失敗');return;}
     // 老師可以建立一個刪除自己班級的函式，這裡暫時提示需超管操作
     alert('清除班級需要超管身份，請聯絡管理員。');return;
   }
-  students=[];renderStudentTable();alert('已清除');
+  students=[];renderStudentTable();toast('班級資料已清除','success');
 }
 
 // FORMULA
@@ -1094,7 +1180,7 @@ function renderResultGrid(){
   else hint.classList.remove('on');
 }
 function handleCellClick(r,c){if(cellTypes[r][c].disabled)return;if(!swapSel){swapSel={r:r,c:c};renderResultGrid();return;}if(swapSel.r===r&&swapSel.c===c){swapSel=null;renderResultGrid();return;}var tmp=resultGrid[swapSel.r][swapSel.c];resultGrid[swapSel.r][swapSel.c]=resultGrid[r][c];resultGrid[r][c]=tmp;swapSel=null;renderResultGrid();}
-function exportText(){var txt='=== 座位分配結果 ===\n\n黑板\n\n';for(var r=0;r<6;r++)txt+=resultGrid[r].map(function(d,c){return cellTypes[r][c].disabled?'[停用]':d?d.name.padEnd(4,'　'):'（空）';}).join(' | ')+'\n';navigator.clipboard.writeText(txt).then(function(){alert('已複製！');}).catch(function(){alert('請手動複製');});}
+function exportText(){var txt='=== 座位分配結果 ===\n\n黑板\n\n';for(var r=0;r<6;r++)txt+=resultGrid[r].map(function(d,c){return cellTypes[r][c].disabled?'[停用]':d?d.name.padEnd(4,'　'):'（空）';}).join(' | ')+'\n';navigator.clipboard.writeText(txt).then(function(){toast('已複製到剪貼簿','success');}).catch(function(){alert('請手動複製');});}
 
 // PING
 async function pingSupabase(){var el=document.getElementById('dev-ping');if(el)el.textContent='測量中...';var t0=Date.now();try{await sb.from('classes').select('id').limit(1);var ms=Date.now()-t0;if(el){el.textContent=ms+' ms';el.style.color=ms<200?'var(--acc3)':ms<500?'var(--acc2)':'var(--red)';}setSyncDot('synced','已連線');}catch(e){if(el){el.textContent='失敗';el.style.color='var(--red)';}setSyncDot('error','錯誤');}}
@@ -1103,10 +1189,10 @@ function renderActivityLog(){var al=document.getElementById('activity-log');if(!
 
 // STUDENT
 async function saveStudentSecQ(){
-  if(!currentStudentName||!classCode){alert('請先登入');return;}
+  if(!currentStudentName||!classCode){toast('請先登入','error');return;}
   var sqEl=document.getElementById('stu-sq'),saEl=document.getElementById('stu-sa'),sqcEl=document.getElementById('stu-sq-custom');
   var sq=sqEl?sqEl.value:'',sa=saEl?(saEl.value.trim().toLowerCase()):'',sqc=sqcEl?sqcEl.value.trim():'';
-  if(!sq||!sa){alert('請選擇問題並填寫答案');return;}
+  if(!sq||!sa){toast('請選擇安全問題並填寫答案','error');return;}
   var res=await sb.rpc('save_student_sec_q',{p_class_id:classCode,p_name:currentStudentName,p_pass:currentStudentPw,p_sec_q:sq,p_sec_a:sa,p_sec_q_custom:sqc});
   if(res.error||!res.data||!res.data.ok){alert('儲存失敗：'+(res.data&&res.data.err||res.error&&res.error.message||''));return;}
   var ok=document.getElementById('stu-sq-saved');if(ok){ok.style.display='block';setTimeout(function(){ok.style.display='none';},3000);}
@@ -1116,8 +1202,8 @@ function reEditWish(){
   document.getElementById('submit-result').style.display='none';
   document.getElementById('stu-form-inner').style.display='block';
 }
-function selectCold(v){selectedColdLevel=v;document.querySelectorAll('.wish-3btn[data-v]').forEach(function(b){b.classList.toggle('selected-cold',+b.dataset.v===v);});}
-function selectWindow(v){selectedWindow=v;document.querySelectorAll('.wish-3btn[data-w]').forEach(function(b){b.classList.remove('selected-window-yes','selected-window-no');if(b.dataset.w===v){b.classList.add(v==='yes'?'selected-window-yes':v==='no'?'selected-window-no':'');} });}
+function selectCold(v){selectedColdLevel=v;document.querySelectorAll('.chip[data-v]').forEach(function(b){b.classList.toggle('chip-cold-sel',+b.dataset.v===v);});}
+function selectWindow(v){selectedWindow=v;document.querySelectorAll('.chip[data-w]').forEach(function(b){b.classList.remove('chip-win-yes','chip-win-no','chip-win-meh');if(b.dataset.w===v)b.classList.add(v==='yes'?'chip-win-yes':v==='no'?'chip-win-no':'chip-win-meh');});}
 
 async function enterStudentMode(cls,name){
   hideAll();document.getElementById('student-view').style.display='block';
@@ -1143,7 +1229,7 @@ async function enterStudentMode(cls,name){
     if(me.rank)document.getElementById('stu-rank').value=me.rank;
     if(me.wish_nbr)document.getElementById('stu-wish-nbr').value=me.wish_nbr;
     if(me.wish_row)document.getElementById('stu-wish-row').value=me.wish_row;
-    if(me.cold_level){selectedColdLevel=me.cold_level;selectCold(me.cold_level);}
+    if(me.cold_level){selectedColdLevel=+me.cold_level;selectCold(+me.cold_level);}
     if(me.wish_window){selectedWindow=me.wish_window;selectWindow(me.wish_window);}
     if(me.stu_sec_q){var stsq=document.getElementById('stu-sq');if(stsq){stsq.value=me.stu_sec_q;onStuSecQChange();}}
     if(me.stu_sec_q_custom){var stsqc=document.getElementById('stu-sq-custom');if(stsqc)stsqc.value=me.stu_sec_q_custom;}
@@ -1155,6 +1241,7 @@ async function enterStudentMode(cls,name){
 function applyStudentStatus(status){document.getElementById('stu-status-waiting').style.display=status==='waiting'?'block':'none';document.getElementById('stu-status-closed').style.display=status==='closed'?'block':'none';document.getElementById('stu-form-inner').style.display=status==='open'?'block':'none';}
 function startStudentCountdown(){if(!deadline)return;document.getElementById('stu-countdown-box').style.display='block';if(countdownTimer)clearInterval(countdownTimer);countdownTimer=setInterval(function(){var diff=deadline-new Date();if(diff<=0){clearInterval(countdownTimer);applyStudentStatus('closed');return;}var m=Math.floor(diff/60000),s=Math.floor((diff%60000)/1000);var el=document.getElementById('stu-countdown-display');if(el){el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;el.className='countdown-display'+(diff<60000?' urgent':'');}},1000);}
 async function submitStudentWish(){
+  btnLoad('submit-wish-btn',true,'送出中...');
   var stuSqEl=document.getElementById('stu-sq'),stuSaEl=document.getElementById('stu-sa'),stuSqcEl=document.getElementById('stu-sq-custom');
   var update={wish_nbr:document.getElementById('stu-wish-nbr').value,wish_row:document.getElementById('stu-wish-row').value,cold_level:selectedColdLevel,wish_window:selectedWindow,submitted:true,updated_at:new Date().toISOString(),
     stu_sec_q:stuSqEl?stuSqEl.value:'',stu_sec_a:stuSaEl?(stuSaEl.value.trim().toLowerCase()):'',
@@ -1164,7 +1251,7 @@ async function submitStudentWish(){
   if(document.getElementById('stu-rank-field').style.display!=='none'){var rk=document.getElementById('stu-rank').value;if(rk)update.rank=+rk;}
   var res=await sb.rpc('update_student_wish',{p_class_id:classCode,p_name:currentStudentName,p_pass:currentStudentPw,p_data:update});
   if(res.error||!res.data||!res.data.ok){alert('送出失敗：'+(res.data&&res.data.err||res.error&&res.error.message||''));return;}
-  document.getElementById('stu-form-inner').style.display='none';document.getElementById('submit-result').style.display='block';setSyncDot('synced','已送出');
+  btnLoad('submit-wish-btn',false);document.getElementById('stu-form-inner').style.display='none';document.getElementById('submit-result').style.display='block';setSyncDot('synced','已送出');
 }
 
 // DEMO
@@ -1173,7 +1260,7 @@ function loadDemo(){
   var rows=['front','mid','back','','front','','mid','','back','front','','mid','','back','','front','mid','','','back','front','','mid','back','','','front','mid','','back','','','front','','mid'];
   var wins=['yes','','no','yes','','','no','yes','','','yes','no','','','yes','','no','','yes','','','no','','yes','no','','','','yes','','no','','','yes',''];
   students=names.map(function(name,i){return{name:name,height:Math.round(155+Math.random()*30),myopia:Math.round(Math.random()*800),rank:i+1,wishNbr:i%4===0?names[(i+1)%35]:'',wishRow:rows[i]||'',coldLevel:Math.ceil(Math.random()*5),wishWindow:wins[i]||'',submitted:false,studentPw:String(100+Math.floor(Math.random()*900))};});
-  renderStudentTable();alert('已載入35位範例學生！');
+  renderStudentTable();toast('已載入35位範例學生','info');
 }
 </script>
 </body>
